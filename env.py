@@ -45,7 +45,7 @@ class rlworld():
 
     def step(self):
         action = self.agent.getAction(self.observation)
-        self.observation, self.reward, self.terminated, self.truncated, self.info = env.step(action)
+        self.observation, self.reward, self.terminated, self.truncated, self.info = self.env.step(action)
 
     def run(self, step_count, training_mode=False):
         for _ in range(step_count):
