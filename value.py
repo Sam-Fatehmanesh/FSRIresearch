@@ -1,6 +1,6 @@
 import gymnasium
 import pytorch
 
-class policy():
+class value():
     def __init__(self):
         
