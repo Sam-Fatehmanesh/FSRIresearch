@@ -24,9 +24,9 @@ import gymnasium as gym
 # env.close()
 
 class rlworld():
-    def __init__(self, env_name, render_mode, seed=0):
-        self.env = gym.make(env_name)
-        self.env.seed(seed)
+    def __init__(self, env_name, render_mode=None, seed=0):
+        self.env = gym.make(env_name, render_mode = render_mode)
+        # self.env.seed(seed)
         # self.state_dim = self.env.observation_space.shape[0]
         # self.action_dim = self.env.action_space.shape[0]
         # self.action_max = self.env.action_space.high[0]
@@ -35,6 +35,9 @@ class rlworld():
 
 
     def printAS(self):
-        print(self.env.action_space)
+        print(self.env.action_space.sample())
 
 
+w = rlworld("LunarLander-v2", render_mode="human")
+
+w.printAS()

@@ -1,6 +1,6 @@
 import gymnasium
 import pytorch
 
-class value():
+class agent():
     def __init__(self):
         
