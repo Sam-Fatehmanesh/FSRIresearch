@@ -8,11 +8,11 @@ import env as rlworld
 
 #expsil
 class MaxEntropyQLearning:
-    def __init__(self, env, seed=42):
+    def __init__(self, env, seed=42, ):
         np.random.seed(seed)
         self.env = env
 
-    def eps_olicy(self, q, n_actions, epsilon):
+    def eps_policy(self, q, n_actions, epsilon):
         def policy(observation):
             # Epsilon-greedy policy with added exploration noise to break ties
             best_action_idx = np.argmax(q[observation] + 1e-10 * np.random.random(q[observation].shape))
@@ -41,10 +41,10 @@ class MaxEntropyQLearning:
                 print("\nEpisode {}/{}".format(episode_idx + 1, num_episodes))
             
             observation = self.env.reset()
-            terminal = False
-            t = 1
+            done = False
+            time = 1
             
-            while not terminal:
+            while not done:
                 # Choose an action using the max-entropy policy
                 policy = self.eps_policy(q, nA, epsilon)
                 action_distribution = policy(observation)
@@ -58,7 +58,6 @@ class MaxEntropyQLearning:
                 episode_lengths[episode_idx] = t
                 
                 # Compute the best Q-value for the next state
-                next_action_values = [q[next_observation][next_action] for next_action in np.arange(nA)]
                 best_next_q = max(q[next_observation])
                 
                 # Compute the entropy term for the current action distribution
@@ -68,9 +67,9 @@ class MaxEntropyQLearning:
                 q[observation][action] += learning_rate * (reward + discount_factor * best_next_q - q[observation][action] + entropy_term)
                 
                 if done:
-                    terminal = True
+                    done = True
                 else:
                     observation = next_observation
-                    t += 1
+                    time += 1
         
         return q, episode_lengths, episode_rewards
