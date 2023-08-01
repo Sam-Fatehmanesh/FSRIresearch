@@ -31,8 +31,9 @@ class MaxEntropyQLearning:
 
     def train(self, num_episodes, learning_rate, discount_factor, epsilon):
         # Initialize Q-value function and episode statistics
-        nA = self.env.action_space.n
-        q = defaultdict(lambda: np.zeros(nA))
+        numActions = self.env.action_space.n
+        q_size = 50
+        q = np.zeros((q_size, q_size, numActions))
         episode_lengths = np.zeros(num_episodes)
         episode_rewards = np.zeros(num_episodes)
 
@@ -46,7 +47,7 @@ class MaxEntropyQLearning:
             
             while not done:
                 # Choose an action using the max-entropy policy
-                policy = self.eps_policy(q, nA, epsilon)
+                policy = self.eps_policy(q, numActions, epsilon)
                 action_distribution = policy(observation)
                 action = np.random.choice(np.arange(len(action_distribution)), p=action_distribution)
                 
