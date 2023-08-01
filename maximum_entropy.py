@@ -8,7 +8,7 @@ import env as rlworld
 
 #expsil
 class MaxEntropyQLearning:
-    def __init__(self, env, seed=42, ):
+    def __init__(self, env, seed=42 ):
         np.random.seed(seed)
         self.env = env
 
@@ -55,8 +55,7 @@ class MaxEntropyQLearning:
                 action = np.random.choice(np.arange(len(action_distribution)), p=action_distribution)
                 
                 next_observation, reward, done, _ = self.env.step(action)
-                next_observation = torch.tensor(next_observation)
-                
+                                
                 # Update episode statistics
                 episode_rewards[episode_idx] += reward
                 episode_lengths[episode_idx] = time
@@ -68,17 +67,18 @@ class MaxEntropyQLearning:
                 entropy_term = self.entropy(action_distribution)
                 
                 # Update Q-value using the Q-learning update rule with entropy regularization
-                q[observation][action] += learning_rate * (reward + discount_factor * best_next_q - q[observation][action] + entropy_term)
+                q[observation][action] += learning_rate * (reward + discount_factor * (best_next_q - q[observation][action] + entropy_term))
                 '''
                 Writing in mathematical form: 
 
-                Q(s_1,a_1) = Q(s_0,a_0) + alpha * (reward + gamma( max(Q(s_1, a_0)) - Q(s_0,a_0) ))
+                Q(s_1,a_1) = Q(s_0,a_0) + alpha * (reward + gamma( max(Q(s_1, a_1)) - Q(s_0,a_0) ))
                 Update the Q-value function, which is basically our utility function that we are trying to optimize for picking the best actions, 
                 alpha is some learning rate term that is arbitrarily defined, discount factor determines how farsighted or nearsighted the agent is, 
                 and the update in Q is just picking the max Q-value given the time step ahead. The interesting part here is the added entropy term in both
                 the update of the Q-Value and the added noise with the epsilon greedy policy. Maixmizing entropy, or approaching an d action distribution 
                 that is more (disorded?) is theoretically optimal. 
                 '''
+
                 if done:
                     done = True
                 else:
