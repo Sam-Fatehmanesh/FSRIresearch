@@ -36,6 +36,9 @@ class MaxEntropyQLearning:
         q = np.zeros((q_size, q_size, numActions))
         episode_lengths = np.zeros(num_episodes)
         episode_rewards = np.zeros(num_episodes)
+        '''
+        Initializing the Q-Table with the proper dimensions of the environment, assuming 50 is large enough to discretize it accurately
+        '''
 
         for episode_idx in range(num_episodes):
             if (episode_idx + 1) % 10 == 0:
@@ -66,7 +69,16 @@ class MaxEntropyQLearning:
                 
                 # Update Q-value using the Q-learning update rule with entropy regularization
                 q[observation][action] += learning_rate * (reward + discount_factor * best_next_q - q[observation][action] + entropy_term)
-                
+                '''
+                Writing in mathematical form: 
+
+                Q(s_1,a_1) = Q(s_0,a_0) + alpha * (reward + gamma( max(Q(s_1, a_0)) - Q(s_0,a_0) ))
+                Update the Q-value function, which is basically our utility function that we are trying to optimize for picking the best actions, 
+                alpha is some learning rate term that is arbitrarily defined, discount factor determines how farsighted or nearsighted the agent is, 
+                and the update in Q is just picking the max Q-value given the time step ahead. The interesting part here is the added entropy term in both
+                the update of the Q-Value and the added noise with the epsilon greedy policy. Maixmizing entropy, or approaching an d action distribution 
+                that is more (disorded?) is theoretically optimal. 
+                '''
                 if done:
                     done = True
                 else:
