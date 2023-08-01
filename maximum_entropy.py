@@ -56,7 +56,7 @@ class MaxEntropyQLearning:
                 
                 # Update episode statistics
                 episode_rewards[episode_idx] += reward
-                episode_lengths[episode_idx] = t
+                episode_lengths[episode_idx] = time
                 
                 # Compute the best Q-value for the next state
                 best_next_q = max(q[next_observation])
