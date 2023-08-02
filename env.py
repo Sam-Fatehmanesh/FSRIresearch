@@ -55,8 +55,8 @@ class rlworld():
 # w.printenvstate()
 
 class maBanditWorld():
-    def __init__(self, env_name, agent=None):
-        self.env = gym.make(env_name)
+    def __init__(self, agent=None):
+        self.env = gym.make("BanditTenArmedGaussian-v0")
         self.observation = self.env.reset()
         self.reward = None
         self.terminated = None
@@ -99,10 +99,3 @@ class maBanditWorld():
 
         env.close()
 
-    
-
-
-# w = maBanditWorld("BanditTenArmedGaussian-v0")#, render_mode="human")
-
-# w.printenvstate()
-# w.printAS()
