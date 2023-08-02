@@ -8,9 +8,8 @@ import random
 
 #expsil
 class ThompsonSampling:
-    def __init__(self, env, n_bandits, seed=42):
+    def __init__(self, env, seed=42):
         np.random.seed(seed)
-        self.n_bandits = n_bandits
         self.env = env
 
     def thompson_policy(self,reward_arr, n_bandits):
@@ -25,6 +24,10 @@ class ThompsonSampling:
 
     def train(self, num_episodes):
         # Initialize Q-value function and episode statistics
+        statistics = plotting.EpisodeStats(
+        episode_lengths=np.zeros(num_episodes),
+        episode_rewards=np.zeros(num_episodes))
+
         episode_lengths = np.zeros(num_episodes)
         episode_rewards = np.zeros(num_episodes)
 
@@ -37,14 +40,16 @@ class ThompsonSampling:
             time = 1
             
             while not done:
-                action = self.thompson_policy(episode_rewards, self.n_bandits)
+                numBandits = self.env.action_space.n
+
+                action = self.thompson_policy(episode_rewards, numBandits)
                 
                 next_observation, reward, done, _ = self.env.step(action)
                                 
                 # Update episode statistics
-                episode_rewards[episode_idx] += reward
-                episode_lengths[episode_idx] = time
-                
+
+                statistics.episode_rewards[episode_idx] += reward
+                statistics.episode_lengths[episode_idx] = time
 
                 if done:
                     done = True
@@ -52,4 +57,4 @@ class ThompsonSampling:
                     observation = next_observation
                     time += 1
         
-        return episode_lengths, episode_rewards
+        return statistics
