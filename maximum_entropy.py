@@ -3,7 +3,6 @@ from collections import defaultdict
 import numpy as np
 import gym
 import plotting
-import torch
 import env as rlworld
 
 #expsil
@@ -55,7 +54,7 @@ class MaxEntropyQLearning:
                 action = np.random.choice(np.arange(len(action_distribution)), p=action_distribution)
                 
                 next_observation, reward, done, _ = self.env.step(action)
-                                
+
                 # Update episode statistics
                 episode_rewards[episode_idx] += reward
                 episode_lengths[episode_idx] = time
