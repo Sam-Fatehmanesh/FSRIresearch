@@ -31,6 +31,9 @@ class rlworld():
         self.terminated = None
         self.truncated = None
         self.agent = None
+        self.actions = []
+        self.episode_Q = 0
+        self.observations = []
 
 
     def printAS(self):
@@ -45,13 +48,23 @@ class rlworld():
 
     def step(self):
         action = self.agent.getAction(self.observation)
+        self.actions.append(action)
+
         self.observation, self.reward, self.terminated, self.truncated, self.info = self.env.step(action)
+        self.observations.append(self.observation)
 
     def run(self, step_count, training_mode=False):
         for _ in range(step_count):
             self.step() 
             if self.terminated or self.truncated:
+
                 self.observation, self.info = self.env.reset()
+                
+                if training_mode:
+                    self.agent.train(self.observations, self.actions, self.episode_Q)
+                    self.episode_Q = 0
+                    self.actions = []
+
 
         env.close()
 

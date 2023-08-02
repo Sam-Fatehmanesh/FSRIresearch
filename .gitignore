@@ -1,1 +1,3 @@
 venv
+gym-bandits
+gym-bandits/*
