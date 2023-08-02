@@ -45,7 +45,7 @@ class rlworld():
                     self.actions = []
 
 
-        env.close()
+        self.env.close()
 
     
 
@@ -97,5 +97,5 @@ class maBanditWorld():
                     self.actions = []
 
 
-        env.close()
+        self.env.close()
 

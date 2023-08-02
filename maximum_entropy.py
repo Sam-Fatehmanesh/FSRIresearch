@@ -30,6 +30,10 @@ class MaxEntropyQLearning:
 
     def train(self, num_episodes, learning_rate, discount_factor, epsilon):
         # Initialize Q-value function and episode statistics
+        statistics = plotting.EpisodeStats(
+        episode_lengths=np.zeros(num_episodes),
+        episode_rewards=np.zeros(num_episodes))
+
         numActions = self.env.action_space.n
         q_size = 50
         q = np.zeros((q_size, q_size, numActions))
@@ -56,8 +60,8 @@ class MaxEntropyQLearning:
                 next_observation, reward, done, _ = self.env.step(action)
 
                 # Update episode statistics
-                episode_rewards[episode_idx] += reward
-                episode_lengths[episode_idx] = time
+                statistics.episode_rewards[episode_idx] += reward
+                statistics.episode_lengths[episode_idx] = time
                 
                 # Compute the best Q-value for the next state
                 best_next_q = max(q[next_observation])
@@ -84,4 +88,4 @@ class MaxEntropyQLearning:
                     observation = next_observation
                     time += 1
         
-        return q, episode_lengths, episode_rewards
+        return statistics
