@@ -3,7 +3,6 @@ import numpy as np
 import pandas as pd
 from collections import namedtuple
 from matplotlib import pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
 
 EpisodeStats = namedtuple("Stats",["episode_lengths", "episode_rewards"])
 
