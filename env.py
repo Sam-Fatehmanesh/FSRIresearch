@@ -77,8 +77,7 @@ class maBanditWorld():
     def getObservation(self):
         return self.observation
 
-    def step(self):
-        action = self.agent.getAction(self.observation)
+    def step(self, action):
         self.actions.append(action)
 
         self.observation, self.reward, self.terminated, self.truncated, self.info = self.env.step(action)

@@ -1,3 +1,6 @@
 venv
 gym-bandits
 gym-bandits/*
+__pycache__
+__pycache__/*
+
