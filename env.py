@@ -1,10 +1,10 @@
-import gymnasium as gym
+import gymnasium
 import gym_bandits
 
 
 class rlworld():
     def __init__(self, env_name, agent=None, render_mode=None):
-        self.env = gym.make(env_name, render_mode = render_mode)
+        self.env = gymnasium.make(env_name, render_mode = render_mode)
         self.observation, self.info = self.env.reset()
         self.reward = None
         self.terminated = None
@@ -56,7 +56,7 @@ class rlworld():
 
 class maBanditWorld():
     def __init__(self, agent=None):
-        self.env = gym.make("BanditTenArmedGaussian-v0")
+        self.env = gymnasium.make("BanditTenArmedGaussian-v0")
         self.observation = self.env.reset()
         self.reward = None
         self.terminated = None

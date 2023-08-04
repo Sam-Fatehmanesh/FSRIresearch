@@ -1,9 +1,9 @@
 # from env import environment
 from collections import defaultdict
 import numpy as np
-import gym
+import gymnasium
 import plotting
-import env as rlworld
+import env as maBandaWorld
 
 #expsil
 class MaxEntropyQLearning:
@@ -14,14 +14,23 @@ class MaxEntropyQLearning:
     def eps_policy(self, q, n_actions, epsilon):
         def policy(observation):
             # Epsilon-greedy policy with added exploration noise to break ties
-            best_action_idx = np.argmax(q[observation] + 1e-10 * np.random.random(q[observation].shape))
-            distribution = []
-            for action_idx in range(n_actions):
-                probability = epsilon / n_actions
-                if action_idx == best_action_idx:
-                    probability += 1 - epsilon
-                distribution.append(probability)
-            return distribution
+            if epsilon > np.random():
+                distribution = [1.0/n_actions for i in range(n_actions)]
+                return distribution
+            else:
+                best_action_idx = np.argmax(q[observation] + 1e-10 * np.random.random(q[observation].shape))
+                distribution = [0.0 for i in range(n_actions)]
+                distribution[best_action_idx] += 1.0
+                return distribution
+
+            
+            # distribution = []
+            # for action_idx in range(n_actions):
+            #     probability = epsilon / n_actions
+            #     if action_idx == best_action_idx:
+            #         probability += 1 - epsilon
+            #     distribution.append(probability)
+            # return distribution
         return policy
 
     def entropy(self, actions):
@@ -34,7 +43,7 @@ class MaxEntropyQLearning:
         episode_lengths=np.zeros(num_episodes),
         episode_rewards=np.zeros(num_episodes))
 
-        numActions = self.env.action_space.n
+        numActions = self.env.env.action_space.n
         q_size = 50
         q = np.zeros((q_size, q_size, numActions))
         episode_lengths = np.zeros(num_episodes)
@@ -47,7 +56,7 @@ class MaxEntropyQLearning:
             if (episode_idx + 1) % 10 == 0:
                 print("\nEpisode {}/{}".format(episode_idx + 1, num_episodes))
             
-            observation = self.env.reset()
+            observation = self.env.env.reset()
             done = False
             time = 1
             
@@ -57,10 +66,10 @@ class MaxEntropyQLearning:
                 action_distribution = policy(observation)
                 action = np.random.choice(np.arange(len(action_distribution)), p=action_distribution)
                 
-                next_observation, reward, done, _ = self.env.step(action)
+                next_observation, reward, done, _ = self.env.env.step(action)
 
                 # Update episode statistics
-                statistics.episode_rewards[episode_idx] += reward
+                statistics.episode_rewards[episode_idx] = reward
                 statistics.episode_lengths[episode_idx] = time
                 
                 # Compute the best Q-value for the next state

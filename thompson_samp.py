@@ -1,9 +1,9 @@
 # from env import environment
 from collections import defaultdict
 import numpy as np
-import gym
+import gymnasium
 import plotting
-import env as rlworld
+import env as maBandaWorld
 import random
 
 #expsil
@@ -44,7 +44,7 @@ class ThompsonSampling:
 
                 action = self.thompson_policy(episode_rewards, numBandits)
                 
-                next_observation, reward, done, _ = self.env.step(action)
+                next_observation, reward, done, _ = self.env.env.step(action)
                                 
                 # Update episode statistics
 
