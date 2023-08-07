@@ -13,24 +13,14 @@ class ThompsonSampling:
         self.env = env
 
     def thompson_policy(self,reward_arr,n_bandits):
-        reward_arr = reward_arr/np.sum(reward_arr)
-        successes = reward_arr
-        failures = 1 - reward_arr
-
-
         samples_list = []
-        for bandit_id in range(n_bandits):
-            a = 1 + successes[bandit_id]
-            b = 1 + failures[bandit_id]
-
-            if a <= 0 or b <= 0:
-                print("Invalid values for a or b:", a, b)
-                # Handle the case where a or b is invalid
-                samples_list.append(0.0)  # You can replace this with your own handling logic
-            else:
-                samples_list.append(np.random.beta(a, b))
-
-        return np.argmax(samples_list)   
+        
+        success_count = reward_arr.sum(axis=1)
+        failure_count = reward_arr.shape[1] - success_count
+                    
+        samples_list = [np.random.beta(1 + success_count[bandit_id], 1 + failure_count[bandit_id]) for bandit_id in range(n_bandits)]
+                                
+        return np.argmax(samples_list) 
 
     def train(self, num_episodes, step_count):
         # Initialize Q-value function and episode statistics
