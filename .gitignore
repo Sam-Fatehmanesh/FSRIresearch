@@ -1,3 +1,10 @@
 venv
 gym-bandits
 gym-bandits/*
+gym_bandits/__pycache__/__init__.cpython-38.pyc
+gym_bandits/__pycache__/bandit.cpython-38.pyc
+__pycache__/thompson_samp.cpython-38.pyc
+__pycache__/plotting.cpython-38.pyc
+__pycache__/thompson_samp.cpython-38.pyc
+__pycache__/plotting.cpython-38.pyc
+__pycache__/env.cpython-38.pyc
