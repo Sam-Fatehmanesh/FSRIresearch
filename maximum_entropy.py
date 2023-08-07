@@ -99,7 +99,7 @@ class MaxEntropyQLearning:
                     entropy_term = self.entropy(action_distribution)
                     
                     # Update Q-value using the Q-learning update rule with entropy regularization
-                    q[observation][action] += learning_rate * (reward + discount_factor * (best_next_q - q[observation][action] + 0.1*entropy_term))
+                    q[observation][action] += learning_rate * (reward + discount_factor * (best_next_q - q[observation][action] + entropy_term))
 
 
                     '''
