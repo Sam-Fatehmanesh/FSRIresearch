@@ -11,7 +11,7 @@ class MaxEntropyQLearning:
         np.random.seed(seed)
         self.env = env
 
-
+#working version
 
     def eps_policy(self, q, n_actions, epsilon):
         def policy(observation):
