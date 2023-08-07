@@ -1,5 +1,5 @@
+from gym_bandits import BanditTenArmedGaussian
 import gymnasium
-import gym_bandits
 
 
 class rlworld():
@@ -32,7 +32,7 @@ class rlworld():
         self.observation, self.reward, self.terminated, self.truncated, self.info = self.env.step(action)
         self.observations.append(self.observation)
 
-    def run(self, step_count, training_mode=False):
+    def run(self, training_mode=False):
         for _ in range(step_count):
             self.step() 
             if self.terminated or self.truncated:
@@ -56,7 +56,7 @@ class rlworld():
 
 class maBanditWorld():
     def __init__(self, agent=None):
-        self.env = gymnasium.make("BanditTenArmedGaussian-v0")
+        self.env = BanditTenArmedGaussian()
         self.observation = self.env.reset()
         self.reward = None
         self.terminated = None
@@ -78,7 +78,7 @@ class maBanditWorld():
         return self.observation
 
     def step(self):
-        action = self.agent.getAction(self.observation)
+        action = self.agent.getAction()
         self.actions.append(action)
 
         self.observation, self.reward, self.terminated, self.truncated, self.info = self.env.step(action)
