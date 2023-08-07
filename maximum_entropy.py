@@ -22,7 +22,7 @@ class MaxEntropyQLearning:
                 distribution = [1.0/n_actions for i in range(n_actions)]
                 return distribution
             else:
-                best_action_idx = np.argmax(q[observation] + 1e-10 * np.random.random(q[observation].shape))
+                best_action_idx = np.argmax(q[observation] -(np.sum(q[observation] * np.log(q[observation]))) + 1e-10 * np.random.random(q[observation].shape))
                 distribution = [0.0 for i in range(n_actions)]
                 if 0 <= best_action_idx < n_actions:
                     distribution[best_action_idx] += 1.0

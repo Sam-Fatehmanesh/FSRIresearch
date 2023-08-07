@@ -33,7 +33,6 @@ class rlworld():
         self.observations.append(self.observation)
 
     def run(self, training_mode=False):
-        for _ in range(step_count):
             self.step() 
             if self.terminated or self.truncated:
 
@@ -45,7 +44,6 @@ class rlworld():
                     self.actions = []
 
 
-        self.env.close()
 
     
 
@@ -79,10 +77,7 @@ class maBanditWorld():
 
     def step(self):
         action = self.agent.getAction()
-        self.actions.append(action)
 
-        self.observation, self.reward, self.terminated, self.truncated, self.info = self.env.step(action)
-        self.observations.append(self.observation)
 
     def run(self, step_count, training_mode=False):
         for _ in range(step_count):
