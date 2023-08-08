@@ -15,10 +15,10 @@ class ThompsonSampling:
     def thompson_policy(self,reward_arr,n_bandits):
         samples_list = []
         
-        success_count = reward_arr.sum(axis=1)
-        failure_count = reward_arr.shape[1] - success_count
+        success_count = np.sum(reward_arr)
+        failure_count = reward_arr - success_count
                     
-        samples_list = [np.random.beta(1 + success_count[bandit_id], 1 + failure_count[bandit_id]) for bandit_id in range(n_bandits)]
+        samples_list = [np.random.beta(1 + success_count, 1 + failure_count) for i in range(n_bandits)]
                                 
         return np.argmax(samples_list) 
 

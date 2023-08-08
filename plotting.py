@@ -5,7 +5,7 @@ import pandas as pd
 from collections import namedtuple
 from matplotlib import pyplot as plt
 
-EpisodeStats = namedtuple("Stats",["episode_lengths", "episode_rewards"])
+EpisodeStats = namedtuple("Stats",["episode_lengths", "episode_rewards", "step_reward_avg"])
 
 
 def plot_value_function(V, title="Value Function"):
@@ -45,7 +45,7 @@ def plot_value_function(V, title="Value Function"):
 
 def plot_episode_stats(stats, name, hypa, color, smoothing_window=100, noshow=False):
     window_name = name + hypa
-    
+    '''
     # Plot the episode reward over time
     fig = plt.figure(window_name)
     rewards_smoothed = pd.Series(stats.episode_rewards).rolling(smoothing_window, min_periods=smoothing_window).mean()
@@ -55,7 +55,16 @@ def plot_episode_stats(stats, name, hypa, color, smoothing_window=100, noshow=Fa
     plt.ylabel("Episode Reward (Smoothed)")
     plt.title(f"Episode Reward over Time (Smoothed over window size {name})".format(smoothing_window))
     plt.legend()
+'''
+    fig2 = plt.figure(window_name)
+    rewards_smoothed = pd.Series(stats.step_reward_avg).rolling(smoothing_window, min_periods=smoothing_window).mean()
+    plt.plot(rewards_smoothed, color=color, label=hypa)
+    
+    plt.xlabel("Step")
+    plt.ylabel("Step Reward Avg(Smoothed)")
+    plt.title(f"Step Reward over Time (Smoothed over window size {name})".format(smoothing_window))
+    plt.legend()
     
     
-    return fig
+    return fig2
      #, fig2, fig3

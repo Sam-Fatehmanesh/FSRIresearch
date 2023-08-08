@@ -4,7 +4,8 @@ import numpy as np
 import gymnasium
 import plotting
 import env as maBandaWorld
-
+from scipy.stats import entropy
+import math
 #expsil
 class MaxEntropyQLearning:
     def __init__(self, env, seed=42 ):
@@ -32,7 +33,7 @@ class MaxEntropyQLearning:
             best_action_idx = np.argmax(q[observation] + 1e-10 * np.random.random(q[observation].shape))
             distribution = []
             for action_idx in range(n_actions):
-                probability = epsilon / n_actions
+                probability = epsilon
                 if action_idx == best_action_idx:
                     probability += 1 - epsilon
                 distribution.append(probability)
@@ -51,21 +52,22 @@ class MaxEntropyQLearning:
         # Compute the entropy of the action distribution
         return -np.sum(actions * np.log(actions))
     '''
-    def entropy(self, actions):
+
+    def entropy2(self, actions):
         value,counts = np.unique(actions, return_counts=True)
         norm_counts = counts / counts.sum()
-        return -(norm_counts * np.log(norm_counts)/np.log(2.7182)).sum()
-    def train(self, num_episodes, learning_rate, discount_factor, epsilon, step_count):
+        return (norm_counts * np.log(norm_counts)/np.log(2.7182)).sum()
+    def train(self, num_episodes, learning_rate, discount_factor, epsilon, step_count, decay_factor):
         # Initialize Q-value function and episode statistics
         statistics = plotting.EpisodeStats(
         episode_lengths=np.zeros(num_episodes),
-        episode_rewards=np.zeros(num_episodes))
+        episode_rewards=np.zeros(num_episodes),
+        step_reward_avg=np.zeros(num_episodes*step_count))
 
         numActions = self.env.env.action_space.n
-        q_size = 100
+        q_size = 10
         q = np.zeros((q_size, q_size, numActions))
-        episode_lengths = np.zeros(num_episodes)
-        episode_rewards = np.zeros(num_episodes)
+        rewards = np.zeros(num_episodes*step_count)
         '''
         Initializing the Q-Table with the proper dimensions of the environment, assuming 50 is large enough to discretize it accurately
         '''
@@ -77,7 +79,7 @@ class MaxEntropyQLearning:
             observation = self.env.env.reset()
             done = False
             time = 1
-            
+            epsilon *= decay_factor
             while not done:
                 # Choose an action using the max-entropy policy
                 for i in range(step_count):
@@ -89,14 +91,16 @@ class MaxEntropyQLearning:
                     next_observation, reward, done, _ = self.env.env.step(action)
 
                     # Update episode statistics
+                    rewards[episode_idx*step_count + i] = reward
                     statistics.episode_rewards[episode_idx] += reward
                     statistics.episode_lengths[episode_idx] = time
-                    
+                    statistics.step_reward_avg[episode_idx*step_count + i] = np.sum(rewards)/(episode_idx*step_count + i + 1)
+
                     # Compute the best Q-value for the next state
                     best_next_q = np.max(q[next_observation])
                     
                     # Compute the entropy term for the current action distribution
-                    entropy_term = self.entropy(action_distribution)
+                    entropy_term = entropy(action_distribution,base=math.e)
                     
                     # Update Q-value using the Q-learning update rule with entropy regularization
                     q[observation][action] += learning_rate * (reward + discount_factor * (best_next_q - q[observation][action] + entropy_term))
