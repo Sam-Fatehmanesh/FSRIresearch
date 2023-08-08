@@ -9,10 +9,15 @@ class epsilon_greedy:
     #creates a randomly generated seed of the bandit world, think minecraft
     #why does init need __? python needs it for init methods
     def __init__(self, n_actions, seed = 17):
-        self.history_of_pulls = [0.0 for i in range(n_actions)]
+        self.memory_of_each_pull = [0.0 for i in range(n_actions)]
         self.accumulated_rewards = [0.0 for i range(n_actions)]
-        self.average_reward = [self.accumulated_rewards[i]/self.history_of_pulls[i] for i in range(self.history_of_pulls)]
+        self.average_reward = [self.accumulated_rewards[i]/self.memory_of_each_pull[i] for i in range(self.memory_of_each_pull)]
         self.arms_array = [i for i in range(n_actions)]
+        self.history_of_pulls = []
+        self.steps = []
+        self.running_avg = []
+        self.sigma_sum = 0
+        self.sigma_pulls = 0
         np.random.seed(seed)
         self.env = env
 
@@ -73,54 +78,66 @@ class epsilon_greedy:
 
     #question: what is happening with obsevation, reward, done, info = env.step(action)
 
+    #each step is 1 pull
+    #each episode is 1000 pulls
+    #separate them so the RL doesn't get "stuck" in harder problems
 
-    def train(self, num_episodes, decay_rate, epsilon):
+    def train(self, num_episodes, decay_rate, epsilon, step_count):
 
-        numActions = self.env.action_space.n #need some help understanding this one, .n part, is the .n part just a numerical value?
+        numActions = self.env.env.action_space.n #need some help understanding this one, .n part, is the .n part just a numerical value?
         
-        for episode_idx in range(num_episodes):
-        #brian put if (episode_idx+1) % 10 == 0; won't that only work when it's prefectly divisible?
-        #why not just have it print out every 5 episodes or half way instead of first 10 and last
-        
+        for episode_idx in range(num_episodes):        
             print("\nEpisode {}/{}".format(episode_idx + 1, num_episodes)) #episode_idx + 1 b/c we start counting from 0
 
-            #wait brian how is this not an infinite loop, done never gets modifieid, only time gets a +1 how does done every change from False to True?
+            #not infinite loop because the "game" tells us when we're done
             
-            #the following line resets the enviornment so we get more observations 
-            observation = self.env.reset() #why 2 env?
+            #the following line resets the enviornment so we transition out of the inner loop (stops us from local minimas in other things than MAB)
+            observation = self.env.env.reset() #why 2 env?
             done = False
             time = 1
 
             while not done:
-                #choose an action using greedy-epsilon policy
-                decayed_epsilon = self.epsilon_decay(num_episodes, decay_rate, epsilon)
-                policy = self.epsilon_greedy_policy(n_actions = numActions, epsilon = decayed_epsilon)
-                action_distribution = policy()
-                action = np.random.choice(np.arange(len(action_distribution)), p=action_distribution)
-                
-                #adding reward (observation) to its slot
-                self.accumulated_rewards[action] += observation
+                for i in range(step_count):
+                    #choose an action using greedy-epsilon policy
+                    decayed_epsilon = self.epsilon_decay(num_episodes, decay_rate, epsilon)
+                    policy = self.epsilon_greedy_policy(n_actions = numActions, epsilon = decayed_epsilon)
+                    action_distribution = policy()
+                    action = np.random.choice(np.arange(len(action_distribution)), p=action_distribution)
+                    
+                    #adding reward (observation) to its slot
+                    self.accumulated_rewards[action] += observation
 
-                #when a specific arm is pulled, add that number to that index
-                #so now we know how many times an arm has been pulled
-                self.history_of_pulls[action] += 1
+                    #when a specific arm is pulled, add that number to that index
+                    #so now we know how many times an arm has been pulled
+                    self.memory_of_each_pull[action] += 1
+
+                    #updating sigma_sum
+                    self.sigma_sum += observation
+
+                    #updating sigma_pulls
+                    self.sigma_pulls += 1
+
+                    #updating memory
+                    self.history_of_pulls[episode_idx*step_count + i] = action
+
+                    #updating steps
+                    self.steps[episode_idx*step_count + i] = (episode_idx*step_count) + i
+
+                    #updating running avg reward for each step
+                    self.running_avg[episode_idx*step_count + i] = self.sigma_sum/self.sigma_pulls
 
 
-                #need help understanding the following line
-                #i know from reading articles that it feeds the envionrment the action but why is there a _?, isn't that slot for info?
-                #this convention looks so weird
-                #use _ if not using that value
-                next_observation, reward, done, _ = self.env.step(action)
+                    #need help understanding the following line
+                    #i know from reading articles that it feeds the envionrment the action but why is there a _?, isn't that slot for info?
+                    #this convention looks so weird
+                    #use _ if not using that value
+                    next_observation, reward, done, _ = self.env.env.step(action)
 
-                if done: #HOW DOES IT KNOW ITS DONE?? the multiarmed bandit game tells the program when it's done
-                    done = True
-                else:
-                    observation = next_observation #need explanation; update observation so new stuff
-                    time += 1 #what is this used for again?
-
-
-#each step is 1 pull
-#each episode is 1000 pulls
+                    if done: #HOW DOES IT KNOW ITS DONE?? the multiarmed bandit game tells the program when it's done
+                        done = True
+                    else:
+                        observation = next_observation #need explanation; update observation so new stuff
+                        time += 1 #what is this used for again?
 
     def plots(self):
         '''
@@ -133,7 +150,7 @@ class epsilon_greedy:
         #x will be 0,1,2,3,,4,5, num of arms
         #y will be num of pulls
         fig1 = plt.figure(figsize = (50,50))
-        plt.bar(self.arms_array, self.history_of_pulls, color = 'blue', width =.4)
+        plt.bar(self.arms_array, self.memory_of_each_pull, color = 'blue', width =.4)
         plt.xlabel("Arm")
         plt.ylabel("Number of times pulled")
         plt.title("Total pulls by arm")
@@ -145,7 +162,7 @@ class epsilon_greedy:
         #dots instead of linear, should converge to 1 y value
         fig2 = plt.figure(figsize = (50,50))
         #used plot because it's just a dot so it's not contiousous (cause matplotlibs isn't conitnous right?)
-        plt.plot(np.cumsum(episode_lengths), self.arms_array)
+        plt.plot(self.steps, self.history_of_pulls)
         plt.xlabel("Time steps")
         plt.ylabel("Arm pulled")
         plt.title("Arm pulled at each time step")
@@ -155,13 +172,11 @@ class epsilon_greedy:
         #x will be steps
         #y will be avg reward
         fig3 = plt.figure(figsize = (50,50))
+        plt.plot(self.steps, self.running_avg)
+        plt.xlabel("Time steps")
+        plt.ylabel("Running Average")
+        plt.title("Running average at each time step")
 
-        #i could make a variable that stores cumsum of reward and then divide by variable of total pulls
-        #but seems like in brian's old code theres smt useful?
-
-        plt.plot(np.cumsum(episode_lengths), )
-
-        #what is steps? took np.cumsum(episode_lengths) from brian's old code
 
         plt.show()
 
