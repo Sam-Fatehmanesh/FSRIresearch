@@ -24,4 +24,5 @@ colors = ['b', 'g', 'r', 'c', 'm', 'y', 'k', 'orange', 'purple', 'brown']
 
 
 epsilon_greedy.train(num_episodes=1000, decay_rate=.005, epsilon = 1, step_count = 100)
-plt.show()
+epsilon_greedy.plots()
+
