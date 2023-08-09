@@ -16,6 +16,7 @@ class epsilon_greedy:
         self.history_of_pulls = []
         self.steps = []
         self.running_avg = []
+
         self.sigma_sum = 0
         self.sigma_pulls = 0
         np.random.seed(seed)
@@ -99,7 +100,7 @@ class epsilon_greedy:
             while not done:
                 for i in range(step_count):
                     #choose an action using greedy-epsilon policy
-                    decayed_epsilon = self.epsilon_decay(num_episodes, decay_rate, epsilon)
+                    decayed_epsilon = self.epsilon_decay(episode_idx, decay_rate, epsilon)
                     policy = self.epsilon_greedy_policy(n_actions = numActions, epsilon = decayed_epsilon)
                     action_distribution = policy()
                     action = np.random.choice(np.arange(len(action_distribution)), p=action_distribution)
@@ -180,6 +181,16 @@ class epsilon_greedy:
 
 
         plt.show()
-
-        #is the bottom right? yes
         return fig1, fig2, fig3
+        #fig4 = for regret plot regret
+'''        total reward that optimal agent would obtain - '''
+
+
+'''
+
+        normalize plot 1
+        action distribution at each timestep for plot 2
+        plot 3 stay the same
+        plot 4 will be regret
+'''
+        #is the bottom right? yes
