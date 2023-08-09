@@ -8,7 +8,7 @@ import env as maBanditWorld
 class epsilon_greedy:
     #creates a randomly generated seed of the bandit world, think minecraft
     #why does init need __? python needs it for init methods
-    def __init__(self, n_actions, seed = 17):
+    def __init__(self, n_actions, env, seed=17):
         self.memory_of_each_pull = [0.0 for i in range(n_actions)]
         self.accumulated_rewards = [0.0 for i in range(n_actions)]
         self.average_reward = [self.accumulated_rewards[i]/self.memory_of_each_pull[i] for i in range(self.memory_of_each_pull)]
@@ -16,9 +16,26 @@ class epsilon_greedy:
         self.history_of_pulls = []
         self.steps = []
         self.running_avg = []
+        self.history_of_action_distributions = []
 
         self.sigma_sum = 0
         self.sigma_pulls = 0
+
+        #how to calculate regret at a given time step:
+        #highest mean reward of the 10 arm reward distributions - mean reward of the selected arm reward distribution
+        self.regret_list = []
+        
+        #find the true best arm
+        r_dist = self.env.env.getRDist()
+            
+        self.array_with_mean_reward_of_each_arm = []
+        for i in range(r_dist):
+            mean_reward_of_each_arm = np.mean(r_dist[i])
+            self.array_with_mean_reward_of_each_arm.append(mean_reward_of_each_arm)
+            mean_reward_of_each_arm = 0
+        
+        self.mean_reward_of_best_arm = np.max(array_with_mean_reward_of_each_arm)
+
         np.random.seed(seed)
         self.env = env
 
@@ -105,6 +122,9 @@ class epsilon_greedy:
                     action_distribution = policy()
                     action = np.random.choice(np.arange(len(action_distribution)), p=action_distribution)
                     
+                    #appending an entire distribution to history of action distributions for plotting later
+                    self.history_of_action_distributions.append(action_distribution)
+
                     #adding reward (observation) to its slot
                     self.accumulated_rewards[action] += observation
 
@@ -127,6 +147,14 @@ class epsilon_greedy:
                     #updating running avg reward for each step
                     self.running_avg[episode_idx*step_count + i] = self.sigma_sum/self.sigma_pulls
 
+                    #finds mean_reward so we can calculate regret
+                    mean_reward_of_selected_arm = np.mean(r_dist[action])
+
+                    #calculating regret
+                    regret_of_step = self.mean_reward_of_best_arm - mean_reward_of_selected_arm
+
+                    #appending regret to a list
+                    self.regret_list.append(regret_of_step)
 
                     #need help understanding the following line
                     #i know from reading articles that it feeds the envionrment the action but why is there a _?, isn't that slot for info?
@@ -139,6 +167,10 @@ class epsilon_greedy:
                     else:
                         observation = next_observation #need explanation; update observation so new stuff
                         time += 1 #what is this used for again?
+        
+        #the following should normalize plot 1
+        for i in range(self.memory_of_each_pull):
+            self.memory_of_each_pull[i/(num_episodes*step_count)]
 
 
     def plots(self):
@@ -164,7 +196,7 @@ class epsilon_greedy:
         #dots instead of linear, should converge to 1 y value
         fig2 = plt.figure(figsize = (50,50))
         #used plot because it's just a dot so it's not contiousous (cause matplotlibs isn't conitnous right?)
-        plt.plot(self.steps, self.history_of_pulls)
+        plt.plot(self.steps, self.history_of_action_distributions)
         plt.xlabel("Time steps")
         plt.ylabel("Arm pulled")
         plt.title("Arm pulled at each time step")
@@ -179,18 +211,22 @@ class epsilon_greedy:
         plt.ylabel("Running Average")
         plt.title("Running average at each time step")
 
+        #regret plot, shows us how close our reward is to actual max reward possible of that step
+        #x wlil be steps
+        #y will be regret of each step
+        fig4 = plt.figure(figsize = (50,50))
+        plt.plot(self.steps, self.regret_list)
+        plt.xlabel("Time steps")
+        plt.ylabel("Regret")
+        plt.title("Time steps vs. Regret")
+
 
         plt.show()
-        return fig1, fig2, fig3
-        #fig4 = for regret plot regret
-'''        total reward that optimal agent would obtain - '''
 
-
+        #is the bottom right? yes
+        return fig1, fig2, fig3    
+        
 '''
-
-        normalize plot 1
-        action distribution at each timestep for plot 2
-        plot 3 stay the same
+        commit message: epi-greed: finished polishing the plots and added a regret plot
         plot 4 will be regret
 '''
-        #is the bottom right? yes
