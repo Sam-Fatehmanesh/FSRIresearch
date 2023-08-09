@@ -65,7 +65,7 @@ class MaxEntropyQLearning:
         step_reward_avg=np.zeros(num_episodes*step_count))
 
         numActions = self.env.env.action_space.n
-        q_size = 10
+        q_size = 50
         q = np.zeros((q_size, q_size, numActions))
         rewards = np.zeros(num_episodes*step_count)
         '''
@@ -79,10 +79,11 @@ class MaxEntropyQLearning:
             observation = self.env.env.reset()
             done = False
             time = 1
-            epsilon *= decay_factor
+            
             while not done:
                 # Choose an action using the max-entropy policy
                 for i in range(step_count):
+                    epsilon *= decay_factor
                     policy = self.eps_policy(q, numActions, epsilon)
                     action_distribution = policy(observation)
                     total_probability = sum(action_distribution)
