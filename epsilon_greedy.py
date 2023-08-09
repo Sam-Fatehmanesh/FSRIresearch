@@ -10,7 +10,7 @@ class epsilon_greedy:
     #why does init need __? python needs it for init methods
     def __init__(self, n_actions, seed = 17):
         self.memory_of_each_pull = [0.0 for i in range(n_actions)]
-        self.accumulated_rewards = [0.0 for i range(n_actions)]
+        self.accumulated_rewards = [0.0 for i in range(n_actions)]
         self.average_reward = [self.accumulated_rewards[i]/self.memory_of_each_pull[i] for i in range(self.memory_of_each_pull)]
         self.arms_array = [i for i in range(n_actions)]
         self.history_of_pulls = []
@@ -138,6 +138,7 @@ class epsilon_greedy:
                     else:
                         observation = next_observation #need explanation; update observation so new stuff
                         time += 1 #what is this used for again?
+
 
     def plots(self):
         '''
