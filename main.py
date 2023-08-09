@@ -3,9 +3,12 @@ from thompson_samp import ThompsonSampling
 import plotting
 from env import maBanditWorld
 from matplotlib import pyplot as plt
+import epsilon_greedy
+
 env = maBanditWorld()
 max_ent = MaxEntropyQLearning(env)
 thomps = ThompsonSampling(env)
+eps_greed = epsilon_greedy(env)
 
 colors = ['b', 'g', 'r', 'c', 'm', 'y', 'k', 'orange', 'purple', 'brown']
 
@@ -23,6 +26,6 @@ colors = ['b', 'g', 'r', 'c', 'm', 'y', 'k', 'orange', 'purple', 'brown']
 
 
 
-epsilon_greedy.train(num_episodes=1000, decay_rate=.005, epsilon = 1, step_count = 100)
-epsilon_greedy.plots()
+eps_greed.train(num_episodes=1000, decay_rate=.005, epsilon = 1, step_count = 100)
+eps_greed.plots()
 

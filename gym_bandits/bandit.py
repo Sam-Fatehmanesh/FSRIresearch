@@ -38,6 +38,9 @@ class BanditEnv(gymnasium.Env):
         self.np_random, seed = seeding.np_random(seed)
         return [seed]
 
+    def getRDist(self):
+        return self.r_dist
+
     def step(self, action):
         assert self.action_space.contains(action)
 
