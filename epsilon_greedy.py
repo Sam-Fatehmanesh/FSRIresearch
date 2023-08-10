@@ -8,7 +8,10 @@ import env as maBanditWorld
 class epsilon_greedy:
     #creates a randomly generated seed of the bandit world, think minecraft
     #why does init need __? python needs it for init methods
-    def __init__(self, n_actions, env, seed=17):
+    def __init__(self, n_actions, env, seed):
+        self.env = env
+        np.random.seed(seed)
+
         self.memory_of_each_pull = [0.0 for i in range(n_actions)]
         self.accumulated_rewards = [0.0 for i in range(n_actions)]
         self.average_reward = [self.accumulated_rewards[i]/(self.memory_of_each_pull[i]+1) for i in range(len(self.memory_of_each_pull))]
@@ -24,7 +27,7 @@ class epsilon_greedy:
         #how to calculate regret at a given time step:
         #highest mean reward of the 10 arm reward distributions - mean reward of the selected arm reward distribution
         self.regret_list = []
-        self.env = env
+    
         #find the true best arm
         self.r_dist = self.env.env.getRDist()
             
@@ -32,11 +35,11 @@ class epsilon_greedy:
         for i in range(len(self.r_dist)):
             mean_reward_of_each_arm = np.mean(self.r_dist[i])
             self.array_with_mean_reward_of_each_arm.append(mean_reward_of_each_arm)
-            mean_reward_of_each_arm = 0
         
         self.mean_reward_of_best_arm = np.max(self.array_with_mean_reward_of_each_arm)
 
-        np.random.seed(seed)
+        print(self.mean_reward_of_best_arm)
+
         
 
     #whats the difference between the above line and np.random.seed(<seed>) \n env.seed(17)
@@ -228,6 +231,5 @@ class epsilon_greedy:
         return fig1, fig2, fig3    
         
 '''
-        commit message: epi-greed: finished polishing the plots and added a regret plot
-        plot 4 will be regret
+        commit message: epi-greed: fixing graphs
 '''
