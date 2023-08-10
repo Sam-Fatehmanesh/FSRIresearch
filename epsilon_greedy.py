@@ -123,7 +123,7 @@ class epsilon_greedy:
                     decayed_epsilon = self.epsilon_decay(episode_idx, decay_rate, epsilon)
                     policy = self.epsilon_greedy_policy(n_actions = numActions, epsilon = decayed_epsilon)
                     action_distribution = policy()
-                    print("action distribution: " + action_distribution)
+                    print("action distribution: " + str(action_distribution))
                     action = np.random.choice(np.arange(len(action_distribution)), p=action_distribution)
                     
                     #appending an entire distribution to history of action distributions for plotting later
@@ -138,8 +138,8 @@ class epsilon_greedy:
 
                     #updating sigma_sum
                     self.sigma_sum += observation
-                    print("Observation: " + observation)
-                    print("Sigma sum: " + self.sigma_sum)
+                    print("Observation: " + str(observation))
+                    print("Sigma sum: " + str(self.sigma_sum))
 
                     #updating sigma_pulls
                     self.sigma_pulls += 1
