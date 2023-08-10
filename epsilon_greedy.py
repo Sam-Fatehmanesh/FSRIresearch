@@ -11,7 +11,7 @@ class epsilon_greedy:
     def __init__(self, n_actions, env, seed=17):
         self.memory_of_each_pull = [0.0 for i in range(n_actions)]
         self.accumulated_rewards = [0.0 for i in range(n_actions)]
-        self.average_reward = [self.accumulated_rewards[i]/self.memory_of_each_pull[i] for i in range(self.memory_of_each_pull)]
+        self.average_reward = [self.accumulated_rewards[i]/(self.memory_of_each_pull[i]+1) for i in range(len(self.memory_of_each_pull))]
         self.arms_array = [i for i in range(n_actions)]
         self.history_of_pulls = []
         self.steps = []
@@ -24,20 +24,20 @@ class epsilon_greedy:
         #how to calculate regret at a given time step:
         #highest mean reward of the 10 arm reward distributions - mean reward of the selected arm reward distribution
         self.regret_list = []
-        
+        self.env = env
         #find the true best arm
-        r_dist = self.env.env.getRDist()
+        self.r_dist = self.env.env.getRDist()
             
         self.array_with_mean_reward_of_each_arm = []
-        for i in range(r_dist):
-            mean_reward_of_each_arm = np.mean(r_dist[i])
+        for i in range(len(self.r_dist)):
+            mean_reward_of_each_arm = np.mean(self.r_dist[i])
             self.array_with_mean_reward_of_each_arm.append(mean_reward_of_each_arm)
             mean_reward_of_each_arm = 0
         
-        self.mean_reward_of_best_arm = np.max(array_with_mean_reward_of_each_arm)
+        self.mean_reward_of_best_arm = np.max(self.array_with_mean_reward_of_each_arm)
 
         np.random.seed(seed)
-        self.env = env
+        
 
     #whats the difference between the above line and np.random.seed(<seed>) \n env.seed(17)
     #don't really need self.env = env
@@ -139,16 +139,16 @@ class epsilon_greedy:
                     self.sigma_pulls += 1
 
                     #updating memory
-                    self.history_of_pulls[episode_idx*step_count + i] = action
+                    self.history_of_pulls.append(action)
 
                     #updating steps
-                    self.steps[episode_idx*step_count + i] = (episode_idx*step_count) + i
+                    self.steps.append(len(self.steps))
 
                     #updating running avg reward for each step
-                    self.running_avg[episode_idx*step_count + i] = self.sigma_sum/self.sigma_pulls
+                    self.running_avg.append(self.sigma_sum/self.sigma_pulls)
 
                     #finds mean_reward so we can calculate regret
-                    mean_reward_of_selected_arm = np.mean(r_dist[action])
+                    mean_reward_of_selected_arm = np.mean(self.r_dist[action])
 
                     #calculating regret
                     regret_of_step = self.mean_reward_of_best_arm - mean_reward_of_selected_arm
@@ -169,8 +169,8 @@ class epsilon_greedy:
                         time += 1 #what is this used for again?
         
         #the following should normalize plot 1
-        for i in range(self.memory_of_each_pull):
-            self.memory_of_each_pull[i/(num_episodes*step_count)]
+        for i in range(len(self.memory_of_each_pull)):
+            self.memory_of_each_pull[int(i/(num_episodes*step_count))]
 
 
     def plots(self):
@@ -196,6 +196,7 @@ class epsilon_greedy:
         #dots instead of linear, should converge to 1 y value
         fig2 = plt.figure(figsize = (50,50))
         #used plot because it's just a dot so it's not contiousous (cause matplotlibs isn't conitnous right?)
+
         plt.plot(self.steps, self.history_of_action_distributions)
         plt.xlabel("Time steps")
         plt.ylabel("Arm pulled")
