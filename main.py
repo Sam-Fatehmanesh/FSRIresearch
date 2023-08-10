@@ -25,6 +25,6 @@ colors = ['b', 'g', 'r', 'c', 'm', 'y', 'k', 'orange', 'purple', 'brown']
 #0.9 DISCOUNT FACTOR
 
 
-eps_greed.train(num_episodes=1, decay_rate=.005, epsilon = 1, step_count = 1000)
+eps_greed.train(num_episodes=1, decay_rate=.005, epsilon = 1, step_count = 100)
 eps_greed.plots()
 
