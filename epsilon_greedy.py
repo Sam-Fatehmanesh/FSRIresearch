@@ -44,7 +44,7 @@ class epsilon_greedy:
         self.best_arm = np.argmax(self.array_with_mean_reward_of_each_arm)
         self.mean_reward_of_best_arm = np.max(self.array_with_mean_reward_of_each_arm)
 
-        print(self.mean_reward_of_best_arm)
+        #print(self.mean_reward_of_best_arm)
 
         
 
@@ -135,6 +135,9 @@ class epsilon_greedy:
 
                     action = np.random.choice(np.arange(len(action_distribution)), p=action_distribution)
 
+                    print(np.arange(len(action_distribution)))
+                    print(action_distribution)
+
                     next_observation, reward, done, _ = self.env.env.step(action)
                     
                     #appending action to history of action distributions for plotting later
@@ -216,7 +219,7 @@ class epsilon_greedy:
             self.memory_of_each_pull[i] = self.memory_of_each_pull[i]/self.sigma_pulls
         #print(self.memory_of_each_pull)
 
-        sum_of_distribution = np.sum(self.memory_of_each_pull)
+        #sum_of_distribution = np.sum(self.memory_of_each_pull)
 
         #print(sum_of_distribution)
 
@@ -278,7 +281,3 @@ class epsilon_greedy:
 
         #is the bottom right? yes
         return fig1, fig2, fig4, fig5
-        
-'''
-        commit message: epi-greed: fixing graphs
-'''
