@@ -18,11 +18,12 @@ class upper_confidence_bound:
         self.running_avg = []
         self.history_of_action_distributions = []
         self.running_regret = []
-
+        self.optimal_avg_running_reward = []
 
         self.sigma_regret = 0
         self.sigma_sum = 0
         self.sigma_pulls = 0
+        self.sigma_optimal_reward = 0
 
         #how to calculate regret at a given time step:
         #highest mean reward of the 10 arm reward distributions - mean reward of the selected arm reward distribution
@@ -75,7 +76,7 @@ class upper_confidence_bound:
 
     
     def train(self, num_episodes, step_count, c):
-        numActions = self.env.env.action_space.n #need some help understanding this one, .n part, is the .n part just a numerical value?
+        numActions = self.env.env.action_space.n
 
         observation = self.env.env.reset() #??? 
         time = 1
@@ -121,6 +122,8 @@ class upper_confidence_bound:
             ucb_value_of_n_arm = self.average_reward[i] + c*(np.sqrt(((2*np.log(self.sigma_pulls))/self.memory_of_each_pull[i])))
 
             self.ucb_of_each_arm[i] = ucb_value_of_n_arm
+
+            #self.optimal_avg_running_reward.append(self.optimal_avg_running_reward)
 
             observation = next_observation #need explanation; update observation so new stuff
             time += 1 #what is this used for again?
@@ -178,14 +181,11 @@ class upper_confidence_bound:
                     #finds mean_reward so we can calculate regret
                     #mean_reward_of_selected_arm = np.mean(self.r_dist[action])
 
-                    #calculating regret
-                    regret_of_step = self.mean_reward_of_best_arm - self.average_reward[action]
-
-                    #calculating sigma_regret
-                    self.sigma_regret += regret_of_step
-
-                    #updating sigma_regret list
-                    self.running_regret.append(self.sigma_pulls*self.mean_reward_of_best_arm - self.sigma_regret)
+                    maximal_reward_mean_arm_idx = np.argmax(self.average_reward)
+                    
+                    regret_after_T_rounds = (self.sigma_pulls * self.average_reward[maximal_reward_mean_arm_idx]) - self.sigma_sum
+                    self.sigma_regret += regret_after_T_rounds
+                    self.running_regret.append(self.sigma_regret/self.sigma_pulls)
                     
 
                     print("step {}/{}".format(i, step_count))
@@ -254,8 +254,12 @@ class upper_confidence_bound:
         plt.ylabel("Arm pulled")
         plt.title("Arm pulled at each time step")
 
-        #animated bar graph
-        #fig3 = plt.figure(figsize = (50,50))
+        # #optimal reward
+        # fig3 = plt.figure(figsize = (50,50))
+        # plt.plot(self.steps, self.optimal_avg_running_reward)
+        # plt.xlabel("Time steps")
+        # plt.ylabel("Optimal running avg reward")
+        # plt.title("Optimal average running reward")
 
 
         #continous plot timestepv. reward
