@@ -5,7 +5,7 @@ from matplotlib.animation import FuncAnimation
 import matplotlib.pyplot as plt
 import env as maBanditWorld
 
-#epsilon_greedy without Q-learning because I'm not sure what the states of the table are (actions are pulling "arms")
+#epsilon_greedy with decaying epsilon without Q-learning because I'm not sure what the states of the table are (actions are pulling "arms")
 
 class epsilon_greedy:
     #creates a randomly generated seed of the bandit world, think minecraft
@@ -23,6 +23,7 @@ class epsilon_greedy:
         self.running_avg = []
         self.history_of_action_distributions = []
         self.running_regret = []
+        self.optimal_avg_running_reward = []
 
         self.sigma_regret = 0
         self.sigma_sum = 0
@@ -67,12 +68,23 @@ class epsilon_greedy:
     like where does n_actions and observations come from?
     '''
     
+#try 1/t decay rate
+
+#regret is not calculated correctly
+
+
+
+
     #under the assumption that epsilon is between 0,1
     #under the assumptiong that decay_rate is between 0,1
     #take initial epsilon and then decrease it until we are exploiting near the end of episodes
     def epsilon_decay(self, step_count, decay_rate, epsilon):
         #as episodes happen, i want epsilon to get smaller, decay, so need to track where num-epsidoes is at
-        return epsilon * ((1 - decay_rate)**(step_count))
+        return 1/step_count
+        
+        #1/step_count #wtf does this decay have lower regret than ucb?
+
+        #epsilon * ((1 - decay_rate)**(step_count))
 
     #what is q? q table numbers
     def epsilon_greedy_policy(self, n_actions, epsilon):
@@ -127,8 +139,8 @@ class epsilon_greedy:
                 for i in range(step_count):
                     #choose an action using greedy-epsilon policy
                     
-                    decayed_epsilon = self.epsilon_decay(step_count=i, decay_rate=decay_rate, epsilon=epsilon) #decays within episodes not out of
-                    policy = self.epsilon_greedy_policy(n_actions=numActions, epsilon=decayed_epsilon)
+                    decayed_epsilon = self.epsilon_decay(step_count=i+1, decay_rate=decay_rate, epsilon=epsilon) #decays within episodes not out of
+                    policy = self.epsilon_greedy_policy(n_actions=numActions, epsilon=decayed_epsilon) #epsilon itself outputs a linear regret curve
                     action_distribution = policy()
 
                     #self.average_reward =  [self.accumulated_rewards[i]/(self.memory_of_each_pull[i]+1) for i in range(len(self.memory_of_each_pull))]
@@ -168,18 +180,34 @@ class epsilon_greedy:
                     #updating running avg reward for each step
                     self.running_avg.append(self.sigma_sum/self.sigma_pulls)
 
-                    #finds mean_reward so we can calculate regret
-                    mean_reward_of_selected_arm = np.mean(self.r_dist[action])
+                    # #finds mean_reward so we can calculate regret
+                    # #mean_reward_of_selected_arm = np.mean(self.r_dist[action])
 
-                    #calculating regret
-                    regret_of_step = self.mean_reward_of_best_arm - mean_reward_of_selected_arm
+                    mean_reward_of_selected_arm = self.average_reward[action]
 
-                    #calculating sigma_regret
-                    self.sigma_regret += regret_of_step
+                    # mean_reward_of_best_arm_idx = np.argmax(self.average_reward)
 
-                    #updating sigma_regret list
-                    self.running_regret.append(self.sigma_pulls*self.mean_reward_of_best_arm - self.sigma_regret)
+                    # mean_reward_of_best_arm = self.average_reward[mean_reward_of_best_arm_idx]
+
+                    # #calculating regret
+                    # regret_of_step = mean_reward_of_best_arm - mean_reward_of_selected_arm
+
+                    # #calculating sigma_regret
+                    # self.sigma_regret += regret_of_step
+
+                    # #updating sigma_regret list
+                    # #self.running_regret.append(self.sigma_pulls*self.mean_reward_of_best_arm - self.sigma_regret)
                     
+                    #regret after T rounds is calcultaed as 
+
+                    maximal_reward_mean_arm_idx = np.argmax(self.average_reward)
+                    
+                    regret_after_T_rounds = (self.sigma_pulls * self.average_reward[maximal_reward_mean_arm_idx]) - self.sigma_sum
+                    self.sigma_regret += regret_after_T_rounds
+                    self.running_regret.append(self.sigma_regret/self.sigma_pulls)
+
+
+                    self.optimal_avg_running_reward.append(self.mean_reward_of_best_arm)
 
                     #need help understanding the following line
                     #i know from reading articles that it feeds the envionrment the action but why is there a _?, isn't that slot for info?
@@ -257,6 +285,12 @@ class epsilon_greedy:
         #animated bar graph
         #fig3 = plt.figure(figsize = (50,50))
 
+        #optimal reward
+        fig3 = plt.figure(figsize = (50,50))
+        plt.plot(self.steps, self.optimal_avg_running_reward)
+        plt.xlabel("Time steps")
+        plt.ylabel("Optimal running avg reward")
+        plt.title("Optimal average running reward")
 
         #continous plot timestepv. reward
         #x will be steps
