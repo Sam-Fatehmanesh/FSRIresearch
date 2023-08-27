@@ -13,10 +13,14 @@ class epsilon_greedy:
     def __init__(self, n_actions, env, seed):
         self.env = env
         np.random.seed(seed)
+        
+        self.number_of_rows = 50
+        self.table_of_avg_rewards = np.zeros((self.number_of_rows, n_actions))
+
+        #self.average_reward = [0.0 for i in range(n_actions)]
 
         self.memory_of_each_pull = [0.0 for i in range(n_actions)]
         self.accumulated_rewards = [0.0 for i in range(n_actions)]
-        self.average_reward = [0.0 for i in range(n_actions)]
         self.arms_array = [i for i in range(n_actions)]
         self.history_of_pulls = []
         self.steps = []
@@ -88,7 +92,7 @@ class epsilon_greedy:
 
     #what is q? q table numbers
     def epsilon_greedy_policy(self, n_actions, epsilon):
-        def policy():
+        def policy(observation):
 
             #question: what is the specific observation? in maze it would be position
             #if observation is a number, applying MDP here, how do you transition from one # to another? 
@@ -108,10 +112,15 @@ class epsilon_greedy:
                 
                 #when a specific output is observed from pulling an arm, add that number to that index and then divide by the corresponding pull count in memory of pulls
                 distribution = [0.0 for i in range(n_actions)]
-                best_action_idx = np.argmax(self.average_reward) #gets the index of the largest value in accumulated_rewards
+                best_action_idx = np.argmax(self.table_of_avg_rewards[observation]) #gets the index of the largest value in accumulated_rewards
+                #print(best_action_idx)
                 distribution[best_action_idx] += 1.0
                 return distribution
         return policy
+
+
+#best action selector selects within a row 
+#when updating stats need to update within a row and that specific action 
 
 
 
@@ -141,34 +150,36 @@ class epsilon_greedy:
                     
                     decayed_epsilon = self.epsilon_decay(step_count=i+1, decay_rate=decay_rate, epsilon=epsilon) #decays within episodes not out of
                     policy = self.epsilon_greedy_policy(n_actions=numActions, epsilon=decayed_epsilon) #epsilon itself outputs a linear regret curve
-                    action_distribution = policy()
-
-                    #self.average_reward =  [self.accumulated_rewards[i]/(self.memory_of_each_pull[i]+1) for i in range(len(self.memory_of_each_pull))]
+                    action_distribution = policy(observation)
 
                     action = np.random.choice(np.arange(len(action_distribution)), p=action_distribution)
 
-                    print(np.arange(len(action_distribution)))
-                    print(action_distribution)
-
+                    #use _ if not using that value
                     next_observation, reward, done, _ = self.env.env.step(action)
                     
                     #appending action to history of action distributions for plotting later
                     self.history_of_action_distributions.append(action_distribution)
 
                     #adding reward to its slot
+                    
                     self.accumulated_rewards[action] += reward
+
+                    self.table_of_avg_rewards[observation][action] += reward
 
                     #when a specific arm is pulled, add that number to that index
                     #so now we know how many times an arm has been pulled
                     self.memory_of_each_pull[action] += 1
 
                     #updating average_reward
-                    self.average_reward[action] = self.accumulated_rewards[action]/self.memory_of_each_pull[action]
+                    self.table_of_avg_rewards[observation][action] = self.table_of_avg_rewards[observation][action]/self.memory_of_each_pull[action]
+
+                    #self.average_reward[action] = self.accumulated_rewards[action]/self.memory_of_each_pull[action]
 
                     #updating sigma_pulls
                     self.sigma_pulls += 1
 
                     #updating sigma_sum
+                    #reward can be negative
                     self.sigma_sum += reward
 
                     #updating memory
@@ -180,10 +191,12 @@ class epsilon_greedy:
                     #updating running avg reward for each step
                     self.running_avg.append(self.sigma_sum/self.sigma_pulls)
 
-                    # #finds mean_reward so we can calculate regret
-                    # #mean_reward_of_selected_arm = np.mean(self.r_dist[action])
+                    # finds mean_reward so we can calculate regret
+                    # mean_reward_of_selected_arm = np.mean(self.r_dist[action])
 
-                    mean_reward_of_selected_arm = self.average_reward[action]
+                    #print(self.table_of_avg_rewards[observation][action])
+                    #print(self.table_of_avg_rewards[observation]) #should be printing out a row
+                    #print(self.table_of_avg_rewards[:, action]) #should print out the col
 
                     # mean_reward_of_best_arm_idx = np.argmax(self.average_reward)
 
@@ -199,21 +212,24 @@ class epsilon_greedy:
                     # #self.running_regret.append(self.sigma_pulls*self.mean_reward_of_best_arm - self.sigma_regret)
                     
                     #regret after T rounds is calcultaed as 
-
-                    maximal_reward_mean_arm_idx = np.argmax(self.average_reward)
                     
-                    regret_after_T_rounds = (self.sigma_pulls * self.average_reward[maximal_reward_mean_arm_idx]) - self.sigma_sum
+                    mean_reward_of_selected_arm = sum(self.table_of_avg_rewards[:, action])
+
+                    regret_after_T_rounds = self.mean_reward_of_best_arm - np.mean(self.r_dist[action])
+                    
                     self.sigma_regret += regret_after_T_rounds
-                    self.running_regret.append(self.sigma_regret/self.sigma_pulls)
+                    
+                    self.running_regret.append(self.sigma_regret)
+
+                    #linear regret if only self.sigma_regret
+                    #linear regret if self.sigma_regret/step_count
+                    #Sublinear regeret if divide by sigma_pulls (amt played)
 
 
                     self.optimal_avg_running_reward.append(self.mean_reward_of_best_arm)
 
-                    #need help understanding the following line
-                    #i know from reading articles that it feeds the envionrment the action but why is there a _?, isn't that slot for info?
-                    #this convention looks so weird
-                    #use _ if not using that value
-
+                    
+                    #debug
                     print("step {}/{}".format(i, step_count))
                     #print("decayed epsilon: " + str(decayed_epsilon))
                     #print("action distribution: " + str(action_distribution))
