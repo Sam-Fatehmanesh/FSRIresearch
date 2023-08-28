@@ -2,9 +2,12 @@
 from collections import defaultdict
 import numpy as np
 import gymnasium
-import plotting
+from plotting import *
 import env as maBandaWorld
 import random
+from tqdm import tqdm
+from matplotlib import pyplot as plt
+
 
 #expsil Maxmimzing the number of states visited or the next state transition, action/state joint distribution
 class ThompsonSampling:
@@ -12,32 +15,24 @@ class ThompsonSampling:
         np.random.seed(seed)
         self.env = env
 
-    def thompson_policy(self,reward_arr,n_bandits):
-        samples_list = []
-        
-        success_count = np.sum(reward_arr)
-        failure_count = reward_arr - success_count
-
-        print("success count: " + str(success_count)) #added to understand what's happening
-        print("failure count: " + str(failure_count)) #added to understand what's happening 
-                    
-        samples_list = [np.random.beta(1 + success_count, 1 + failure_count) for i in range(n_bandits)]
-                                
-        return np.argmax(samples_list) 
+    def thompson_policy(self, reward_arr):
+        samples_list = [np.random.beta(1 + reward_arr[i][0], 1 + reward_arr[i][1]) for i in range(len(reward_arr))]
+        return np.argmax(samples_list)
 
     def train(self, num_episodes, step_count):
         # Initialize Q-value function and episode statistics
-        statistics = plotting.EpisodeStats(
+        statistics = EpisodeStats(
         episode_lengths=np.zeros(num_episodes),
         episode_rewards=np.zeros(num_episodes),
         step_reward_avg=np.zeros(num_episodes*step_count)) #added this
         numBandits = self.env.env.action_space.n
+        data = np.zeros((numBandits, 2))
+        rewards = np.zeros(num_episodes*step_count)
+        armPulled = np.zeros(numBandits)
         
 
 
-        for episode_idx in range(num_episodes):
-            if (episode_idx + 1) % 10 == 0:
-                print("\nEpisode {}/{}".format(episode_idx + 1, num_episodes))
+        for episode_idx in tqdm(range(num_episodes), leave=True):
             
             observation = self.env.env.reset()
             done = False
@@ -45,21 +40,52 @@ class ThompsonSampling:
             
             while not done:
                 for i in range(step_count):
-                    action = self.thompson_policy(statistics.episode_rewards,numBandits)
                     
-                    print(action) #added to understand what's happening, outputs 14131 on a run
-
+                    # print(len(statistics.episode_rewards))
+                    action = self.thompson_policy(data)#self.thompson_policy(statistics.episode_rewards, numBandits)
+                    
+                    # print(action) #added to understand what's happening, outputs 14131 on a run
+                    
                     next_observation, reward, done, _ = self.env.env.step(action)
+                    armPulled[action] += 1
+                    if reward > 0:
+                        data[action, 0] += reward
+                    else:
+                        data[action, 1] += abs(reward)
+
                                     
                     # Update episode statistics
+                    rewards[episode_idx*step_count + i] = reward
 
                     statistics.episode_rewards[episode_idx] += reward
                     statistics.episode_lengths[episode_idx] = time
+                    statistics.step_reward_avg[episode_idx*step_count + i] = np.sum(rewards)/(episode_idx*step_count + i + 1)
 
                     if done:
                         done = True
                     else:
                         observation = next_observation
                         time += 1
-        
+
+        regret = np.zeros(num_episodes*step_count)
+        maxR = np.max(self.env.env.getRDist())
+        for i in tqdm(range(num_episodes*step_count)):
+            regret[i] = ((i+1)*maxR) - np.sum(rewards[:i+1])
+    
+            
+
+
+        print("max R: " + str(maxR))
+        plot_episode_stats(statistics, "Thompson Sampling", " ", "b")
+        X = [i for i in range(num_episodes*step_count)]
+        plotPointGraph(X, regret, "Step", "Cumulative Regret", "Thompson Sampling Cumulative Regret", figsize=(50, 50))
+        plt.show()
         return statistics
+
+def plotPointGraph(X, Y, xlabel, ylabel, title, figsize=(50, 50)):
+    fig = plt.figure(figsize=figsize)
+    plt.plot(X, Y)#, color = 'blue', width =.4)
+    plt.xlabel(xlabel)
+    plt.ylabel(ylabel)
+    plt.title(title)
+    return fig
