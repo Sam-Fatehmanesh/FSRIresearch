@@ -10,14 +10,26 @@ from matplotlib import pyplot as plt
 
 
 #expsil Maxmimzing the number of states visited or the next state transition, action/state joint distribution
-class ThompsonSampling:
+class OptimisticThompsonSampling:
     def __init__(self, env, seed=42):
         np.random.seed(seed)
         self.env = env
 
     def thompson_policy(self, reward_arr):
-        samples_list = [np.random.beta(1 + reward_arr[i][0], 1 + reward_arr[i][1]) for i in range(len(reward_arr))]
-        return np.argmax(samples_list)
+
+        mean = np.array([reward_arr[i][0]/(reward_arr[i][0] + reward_arr[i][1]) for i in range(len(reward_arr))])
+
+        samples_list = [0 for i in range(len(reward_arr))]
+
+        for i in range(len(reward_arr)):
+            sample = np.random.beta(1 + reward_arr[i][0], 1 + reward_arr[i][1])
+            if  sample > mean[i]:
+                samples_list[i] = sample
+                mean[i] = sample
+            else:
+                samples_list[i] = mean[i]
+                
+        return np.argmax(np.array(samples_list))
 
     def train(self, num_episodes, step_count):
         # Initialize Q-value function and episode statistics
@@ -29,6 +41,8 @@ class ThompsonSampling:
         data = np.zeros((numBandits, 2))
         rewards = np.zeros(num_episodes*step_count)
         armPulled = np.zeros(numBandits)
+        #optimistic_mean = np.ones(numBandits) * (-100000)
+        
         
 
 
@@ -42,7 +56,8 @@ class ThompsonSampling:
                 for i in range(step_count):
                     
                     # print(len(statistics.episode_rewards))
-                    action = self.thompson_policy(data)#self.thompson_policy(statistics.episode_rewards, numBandits)
+                    action = self.thompson_policy(data)#, optimistic_mean)#self.thompson_policy(statistics.episode_rewards, numBandits)
+                    #print(optimistic_mean)
                     
                     # print(action) #added to understand what's happening, outputs 14131 on a run
                     
@@ -71,8 +86,7 @@ class ThompsonSampling:
         maxR = np.max(self.env.env.getRDist())
         for i in tqdm(range(num_episodes*step_count)):
             regret[i] = ((i+1)*maxR) - np.sum(rewards[:i+1])
-    
-            
+
 
 
         print("max R: " + str(maxR))
@@ -82,7 +96,7 @@ class ThompsonSampling:
         plt.show()
         return statistics
 
-def plotPointGraph(X, Y, xlabel, ylabel, title, figsize=(50, 50)):
+def plotPointGraph(X, Y, xlabel, ylabel, title, figsize=(50,50)):
     fig = plt.figure(figsize=figsize)
     plt.plot(X, Y)#, color = 'blue', width =.4)
     plt.xlabel(xlabel)
