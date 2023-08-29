@@ -73,8 +73,8 @@ class upper_confidence_bound:
                 new_ucb_value_of_selected_arm = sum(self.table_of_rewards[:, i])/self.memory_of_each_pull[i] + c*(np.sqrt(((2*(np.log(self.sigma_pulls)))/self.memory_of_each_pull[i])))
                 self.ucb_of_each_arm[i] = new_ucb_value_of_selected_arm
                 #print(self.ucb_of_each_arm)
-            print("best action idx: " + str(best_action_idx))
-            print("ucb array: " + str(self.ucb_of_each_arm))
+            #print("best action idx: " + str(best_action_idx))
+            #print("ucb array: " + str(self.ucb_of_each_arm))
 
             return distribution
         return policy
@@ -118,18 +118,21 @@ class upper_confidence_bound:
             mean_reward_of_selected_arm = sum(self.table_of_rewards[:, action])/self.memory_of_each_pull[action]
 
             #calculating regret
-            regret_of_step = self.mean_reward_of_best_arm - np.mean(self.r_dist[action])
+            max_reward_at_t = np.max([reward[0] for reward in self.r_dist])
 
-            #calculating sigma_regret
-            self.sigma_regret += regret_of_step
+            self.sigma_regret = self.sigma_pulls * max_reward_at_t - self.sigma_sum
 
-            #updating sigma_regret list
-            self.running_regret.append(self.sigma_regret/self.sigma_pulls)
+            self.running_regret.append(self.sigma_regret)
+
+            #regret_of_step = self.mean_reward_of_best_arm - mean_reward_of_selected_arm
+            #self.sigma_regret += regret_of_step
+
+            #self.running_regret.append(self.sigma_regret)
 
             #intial 10 calculations of each arm's ucb value
             #ucb_value_of_n_arm = self.average_reward[i] + c*(np.sqrt(((2*np.log(self.sigma_pulls))/self.memory_of_each_pull[i])))
 
-            ucb_value_of_n_arm = sum(self.table_of_rewards[:, action]) + c*(np.sqrt(2*np.log(10)))
+            ucb_value_of_n_arm = sum(self.table_of_rewards[:, action]) + c*(np.sqrt(((2*(np.log(10)))/self.memory_of_each_pull[action])))
 
             self.ucb_of_each_arm[action] = ucb_value_of_n_arm
             #print("action: " + str(action))
@@ -195,15 +198,27 @@ class upper_confidence_bound:
                     self.running_avg.append(self.sigma_sum/self.sigma_pulls)
 
                     #finds mean_reward so we can calculate regret
-                    #mean_reward_of_selected_arm = np.mean(self.r_dist[action])
+                    #mean_reward_of_selected_arm = np.mean(self.table_of_rewards[:, action])
 
-                    mean_reward_of_selected_arm = sum(self.table_of_rewards[:, action])/self.memory_of_each_pull[action]
+                    #highest_mean_arm_idx = argmax(self.average_reward)
 
-                    regret_of_step = self.mean_reward_of_best_arm - np.mean(self.r_dist[action])
+                    #regret_after_T_rounds = self.sigma_pulls*np.max(self.env.env.getRDist()) - sum(self.table_of_rewards[:, action])/self.memory_of_each_pull[action]
+
+                    #self.sigma_regret += regret_after_T_rounds
                     
+                    #self.running_regret.append(self.sigma_regret)
+
+                    mean_reward_of_selected_arm = np.mean(self.r_dist[action])
+                    regret_of_step = self.mean_reward_of_best_arm - mean_reward_of_selected_arm
                     self.sigma_regret += regret_of_step
-                    
+
                     self.running_regret.append(self.sigma_regret)
+
+                    # max_reward_at_t = np.max([reward[0] for reward in self.r_dist])
+
+                    # self.sigma_regret = self.sigma_pulls * max_reward_at_t - self.sigma_sum
+
+                    # self.running_regret.append(self.sigma_regret)
                     
 
                     #print("decayed epsilon: " + str(decayed_epsilon))
@@ -213,8 +228,8 @@ class upper_confidence_bound:
                     #print("Sigma sum: " + str(self.sigma_sum))
                     #print("Reward: " + str(reward))
                     #print(self.table_of_rewards[0])
-                    print("best arm {} ___ Mean_reward_of_best_arm {} ".format(self.best_arm, self.mean_reward_of_best_arm))
-                    print("selected arm: {} ___ mean_reward_of_selected_arm {}".format(action, mean_reward_of_selected_arm))
+                    #print("best arm {} ___ Mean_reward_of_best_arm {} ".format(self.best_arm, self.mean_reward_of_best_arm))
+                    #print("selected arm: {} ___ mean_reward_of_selected_arm {}".format(action, mean_reward_of_selected_arm))
                     #print("regret: " + str(self.sigma_regret))
                     #print("ucb_of_each arm" + str(self.ucb_of_each_arm))
                     #print("average reward array: \n" + str(self.average_reward))
