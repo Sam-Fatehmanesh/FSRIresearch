@@ -84,9 +84,7 @@ class epsilon_greedy:
     #take initial epsilon and then decrease it until we are exploiting near the end of episodes
     def epsilon_decay(self, step_count, decay_rate, epsilon):
         #as episodes happen, i want epsilon to get smaller, decay, so need to track where num-epsidoes is at
-        return 1/step_count
-        
-        #1/step_count #wtf does this decay have lower regret than ucb?
+        return epsilon * ((1 - decay_rate)**(step_count))
 
         #epsilon * ((1 - decay_rate)**(step_count))
 
@@ -213,14 +211,29 @@ class epsilon_greedy:
                     
                     #regret after T rounds is calcultaed as 
                     
-                    mean_reward_of_selected_arm = sum(self.table_of_avg_rewards[:, action])
+                    #total_reward_of_selected_arm_at_t = sum(self.table_of_avg_rewards[:, action])
 
-                    regret_after_T_rounds = self.mean_reward_of_best_arm - np.mean(self.r_dist[action])
+                    #regret_after_T_rounds = np.max(self.env.env.getRDist()) - total_reward_of_selected_arm_at_t
+                    # curr_regret = np.max(self.env.env.getRDist()) - reward
                     
-                    self.sigma_regret += regret_after_T_rounds
+                    # self.sigma_regret += curr_regret
                     
+                    # self.running_regret.append(self.sigma_regret)
+
+
+                    # max_reward_at_t = np.max([reward[0] for reward in self.r_dist])
+
+                    # self.sigma_regret = self.sigma_pulls * max_reward_at_t - self.sigma_sum
+
+                    # self.running_regret.append(self.sigma_regret)
+
+                    mean_reward_of_selected_arm = np.mean(self.r_dist[action])
+                    regret_of_step = self.mean_reward_of_best_arm - mean_reward_of_selected_arm
+                    self.sigma_regret += regret_of_step
+
                     self.running_regret.append(self.sigma_regret)
 
+                    #following is wrong
                     #linear regret if only self.sigma_regret
                     #linear regret if self.sigma_regret/step_count
                     #Sublinear regeret if divide by sigma_pulls (amt played)
@@ -243,7 +256,9 @@ class epsilon_greedy:
                     #print(self.sigma_regret)
                     #print(self.running_regret)
                     #print(self.history_of_pulls)
-                    
+                    #print("Regret2: " + str(np.max(self.env.env.getRDist())))
+
+
                     if done: #HOW DOES IT KNOW ITS DONE?? the multiarmed bandit game tells the program when it's done
                         done = True
                     else:
