@@ -5,11 +5,8 @@ from matplotlib.animation import FuncAnimation
 import matplotlib.pyplot as plt
 import env as maBanditWorld
 
-#epsilon_greedy with decaying epsilon without Q-learning because I'm not sure what the states of the table are (actions are pulling "arms")
-
 class epsilon_greedy:
-    #creates a randomly generated seed of the bandit world, think minecraft
-    #why does init need __? python needs it for init methods
+    #why does init need __? python needs it
     def __init__(self, n_actions, env, seed):
         self.env = env
         np.random.seed(seed)
@@ -33,9 +30,6 @@ class epsilon_greedy:
         self.sigma_sum = 0
         self.sigma_pulls = 0
 
-        #how to calculate regret at a given time step:
-        #highest mean reward of the 10 arm reward distributions - mean reward of the selected arm reward distribution
-    
         #find the true best arm
         self.r_dist = self.env.env.getRDist()
 
@@ -51,64 +45,25 @@ class epsilon_greedy:
 
         #print(self.mean_reward_of_best_arm)
 
-        
-
-    #whats the difference between the above line and np.random.seed(<seed>) \n env.seed(17)
-    #don't really need self.env = env
-    #when creating the mabanditworld object, we can set agent to epsilon-greedy
-    #since we don't use env anywhere, it's another reason to get rid of self.env = env
-    #need self.env = env because need to access the self.actions = [] that contains a history of all actions
-
-
-    #question: what does np.random.seed do? I don't see how it randomly makes a bandit world when env and np.random.seed isn't connected together - done
-
-    #in python, methods of a class needs the parameter self
-    #self parameter allows instance (objects) of a class to have their own attributes (defs); if no self, multiple instances can't have same value
-    
-    '''
-    Question: when creating an object of the greedy_epsilon class, our parameters are what?
-    is it: epsilon_greedy(maBanditWorld, 47)?
-    if so, where does the program get the parameters for the methods in the class?
-    like where does n_actions and observations come from?
-    '''
-    
-#try 1/t decay rate
-
-#regret is not calculated correctly
-
-
 
 
     #under the assumption that epsilon is between 0,1
     #under the assumptiong that decay_rate is between 0,1
     #take initial epsilon and then decrease it until we are exploiting near the end of episodes
     def epsilon_decay(self, step_count, decay_rate, epsilon):
-        #as episodes happen, i want epsilon to get smaller, decay, so need to track where num-epsidoes is at
         return epsilon * ((1 - decay_rate)**(step_count))
 
-        #epsilon * ((1 - decay_rate)**(step_count))
 
-    #what is q? q table numbers
+
     def epsilon_greedy_policy(self, n_actions, epsilon):
         def policy(observation):
-
-            #question: what is the specific observation? in maze it would be position
-            #if observation is a number, applying MDP here, how do you transition from one # to another? 
-            #it's easier to think about transiitoning from 1 position on a maze to another after an action but not with a numerical observation (that's random since slot machine gives random reward amts (right?))
-
             #exploration; outputs even distribution of all actions then we can select
             if epsilon > np.random.rand(): #rand generates a float
-                #distribution is an array, each index of the array is the chance that each action will be chosen
-                #the for i in range(n_actions) populates the array with equal probs for all actions
-                #1.0 is used to guarantee system knows its a float output like 1/7
                 distribution = [1.0/n_actions for i in range(n_actions)]
                 return distribution
+            
             #exploitation: figuring out what the best action is and then making sure that it's a peak so the program picks it
             else:
-                #what does idx stand for? index position
-                #deciding best arm by avg reward of each arm (could be much better if we did standard curve math)
-                
-                #when a specific output is observed from pulling an arm, add that number to that index and then divide by the corresponding pull count in memory of pulls
                 distribution = [0.0 for i in range(n_actions)]
                 best_action_idx = np.argmax(self.table_of_avg_rewards[observation]) #gets the index of the largest value in accumulated_rewards
                 #print(best_action_idx)
@@ -117,27 +72,14 @@ class epsilon_greedy:
         return policy
 
 
-#best action selector selects within a row 
-#when updating stats need to update within a row and that specific action 
-
-
-
-    #question: what is happening with obsevation, reward, done, info = env.step(action)
-
-    #each step is 1 pull
-    #each episode is 1000 pulls
-    #separate them so the RL doesn't get "stuck" in harder problems
 
     def train(self, num_episodes, decay_rate, epsilon, step_count):
 
-        numActions = self.env.env.action_space.n #need some help understanding this one, .n part, is the .n part just a numerical value?
+        numActions = self.env.env.action_space.n
         
         for episode_idx in range(num_episodes):        
-            print("\nEpisode {}/{}".format(episode_idx + 1, num_episodes)) #episode_idx + 1 b/c we start counting from 0
+            print("\nEpisode {}/{}".format(episode_idx + 1, num_episodes)) 
 
-            #not infinite loop because the "game" tells us when we're done
-            
-            #the following line resets the enviornment so we transition out of the inner loop (stops us from local minimas in other things than MAB)
             observation = self.env.env.reset() #why 2 env?
             done = False
             time = 1
@@ -152,7 +94,6 @@ class epsilon_greedy:
 
                     action = np.random.choice(np.arange(len(action_distribution)), p=action_distribution)
 
-                    #use _ if not using that value
                     next_observation, reward, done, _ = self.env.env.step(action)
                     
                     #appending action to history of action distributions for plotting later
@@ -165,7 +106,6 @@ class epsilon_greedy:
                     self.table_of_avg_rewards[observation][action] += reward
 
                     #when a specific arm is pulled, add that number to that index
-                    #so now we know how many times an arm has been pulled
                     self.memory_of_each_pull[action] += 1
 
                     #updating average_reward
@@ -196,43 +136,6 @@ class epsilon_greedy:
                     #print(self.table_of_avg_rewards[observation]) #should be printing out a row
                     #print(self.table_of_avg_rewards[:, action]) #should print out the col
 
-                    # mean_reward_of_best_arm_idx = np.argmax(self.average_reward)
-
-                    # mean_reward_of_best_arm = self.average_reward[mean_reward_of_best_arm_idx]
-
-                    # #calculating regret
-                    # regret_of_step = mean_reward_of_best_arm - mean_reward_of_selected_arm
-
-                    # #calculating sigma_regret
-                    # self.sigma_regret += regret_of_step
-
-                    # #updating sigma_regret list
-                    # #self.running_regret.append(self.sigma_pulls*self.mean_reward_of_best_arm - self.sigma_regret)
-                    
-                    #regret after T rounds is calcultaed as 
-                    
-                    #total_reward_of_selected_arm_at_t = sum(self.table_of_avg_rewards[:, action])
-
-                    #regret_after_T_rounds = np.max(self.env.env.getRDist()) - total_reward_of_selected_arm_at_t
-                    # curr_regret = np.max(self.env.env.getRDist()) - reward
-                    
-                    # self.sigma_regret += curr_regret
-                    
-                    # self.running_regret.append(self.sigma_regret)
-
-
-                    # max_reward_at_t = np.max([reward[0] for reward in self.r_dist])
-
-                    # self.sigma_regret = self.sigma_pulls * max_reward_at_t - self.sigma_sum
-
-                    # self.running_regret.append(self.sigma_regret)
-
-                    # mean_reward_of_selected_arm = np.mean(self.r_dist[action])
-                    # regret_of_step = self.mean_reward_of_best_arm - mean_reward_of_selected_arm
-                    # self.sigma_regret += regret_of_step
-
-                    # self.running_regret.append(self.sigma_regret)
-
                     
                     mean_reward_of_selected_arm = np.mean(self.r_dist[action])
                     regret_of_step = self.mean_reward_of_best_arm - mean_reward_of_selected_arm
@@ -241,14 +144,7 @@ class epsilon_greedy:
                     self.running_regret.append(self.sigma_regret)
 
 
-
-                    #following is wrongs
-                    #linear regret if only self.sigma_regret
-                    #linear regret if self.sigma_regret/step_count
-                    #Sublinear regeret if divide by sigma_pulls (amt played)
-
-
-                    self.optimal_avg_running_reward.append(self.mean_reward_of_best_arm)
+                    #self.optimal_avg_running_reward.append(self.mean_reward_of_best_arm)
 
                     
                     #debug
@@ -268,62 +164,33 @@ class epsilon_greedy:
                     #print("Regret2: " + str(np.max(self.env.env.getRDist())))
 
 
-                    if done: #HOW DOES IT KNOW ITS DONE?? the multiarmed bandit game tells the program when it's done
+                    if done:
                         done = True
                     else:
-                        observation = next_observation #need explanation; update observation so new stuff
-                        time += 1 #what is this used for again?
+                        observation = next_observation
+                        time += 1
 
 
     def plots(self):
-        '''
-        For plotting, q we get a bar graph, x is each arm, y is amount of times pulled
-        also a graph where x is episode number and y is arm but it's dots instead
-        also a gprah where x is epsidoe number and y is reward amt (continous graph)
-        '''
-
         #normalizing bar graph
         for i in range(len(self.memory_of_each_pull)):
             self.memory_of_each_pull[i] = self.memory_of_each_pull[i]/self.sigma_pulls
-        #print(self.memory_of_each_pull)
-
-        #sum_of_distribution = np.sum(self.memory_of_each_pull)
-
-        #print(sum_of_distribution)
 
         #bar graph
-        #x will be 0,1,2,3,,4,5, num of arms
-        #y will be num of pulls
+        #x will be 0,1,2,3,,4,5, num of arms; y will be num of pulls
         fig1 = plt.figure(figsize = (50,50))
         plt.bar(self.arms_array, self.memory_of_each_pull, color = 'blue', width =.4)
         plt.xlabel("Arm")
         plt.ylabel("Probability")
         plt.title("Probability per arm")
 
-        # updating_bar_array = []
-        # def update():
-        #     plt.bar(self.arms_array, self.memory_of_each_pull, color = 'blue', width =.4)
-        #     plt.xlabel("Arm")
-        #     plt.ylabel("Number of times pulled")
-        #     plt.title("Total pulls by arm")
-        #     updating_bar_array = self.memory_of_each_pull
-
-        # ani = FuncAnimation(fig1, update, frames=range(10), repeat=False)
-
-
         #converging dots plot arm pulledv. steps
-        #x will be steps
-        #y will be num of arms
-        #dots instead of linear, should converge to 1 y value
+        #x will be steps; y will be num of arms
         fig2 = plt.figure(figsize = (50,50))
-        #used plot because it's just a dot so it's not contiousous (cause matplotlibs isn't conitnous right?)
         plt.plot(self.steps, self.history_of_pulls)
         plt.xlabel("Time steps")
         plt.ylabel("Arm pulled")
         plt.title("Arm pulled at each time step")
-
-        #animated bar graph
-        #fig3 = plt.figure(figsize = (50,50))
 
         #optimal reward
         fig3 = plt.figure(figsize = (50,50))
@@ -333,8 +200,7 @@ class epsilon_greedy:
         plt.title("Optimal average running reward")
 
         #continous plot timestepv. reward
-        #x will be steps
-        #y will be avg reward
+        #x will be steps; y will be avg reward
         fig4 = plt.figure(figsize = (50,50))
         plt.plot(self.steps, self.running_avg)
         plt.xlabel("Time steps")
@@ -342,8 +208,7 @@ class epsilon_greedy:
         plt.title("Running average at each time step")
 
         #regret plot, shows us how close our reward is to actual max reward possible of that step
-        #x wlil be steps
-        #y will be regret of each step
+        #x wlil be steps; y will be regret of each step
         fig5 = plt.figure(figsize = (50,50))
         plt.plot(self.steps, self.running_regret)
         plt.xlabel("Time steps")
@@ -353,5 +218,4 @@ class epsilon_greedy:
 
         plt.show()
 
-        #is the bottom right? yes
         return fig1, fig2, fig4, fig5
