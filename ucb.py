@@ -27,14 +27,9 @@ class upper_confidence_bound:
         self.sigma_regret = 0
         self.sigma_sum = 0
         self.sigma_pulls = 0
-
-        #how to calculate regret at a given time step:
-        #highest mean reward of the 10 arm reward distributions - mean reward of the selected arm reward distribution
     
         #find the true best arm
         self.r_dist = self.env.env.getRDist()
-
-        #self.reward = self.env.env.getReward()
         
         self.array_with_mean_reward_of_each_arm = []
         for i in range(len(self.r_dist)):
@@ -47,21 +42,11 @@ class upper_confidence_bound:
         #print(self.mean_reward_of_best_arm)
 
 
-# Pull each arm once chcekd
-
-# store avg reward of each arm  self.average_reward
-
-# store how many times one arm has been pulled self.memory_of_each_pull
-
-# total number of rounds played so far store that total too self.sigma_pulls
+# each arm must be played once initially
 
 # constact (c) value of exploration exploitation trade off set by user 
 
-
-# to reduce calculations, let policy calculate
-# and update the specific arm being pulled
-# then select the best one again
-# and return a dsitribution
+# all arms must be updated after a step
 
     def ucb_policy(self, n_actions, c):
         def policy():
@@ -121,23 +106,19 @@ class upper_confidence_bound:
             mean_reward_of_selected_arm = sum(self.table_of_rewards[:, action])/self.memory_of_each_pull[action]
 
             #calculating regret
-            max_reward_at_t = np.max([reward[0] for reward in self.r_dist])
-
-            self.sigma_regret = self.sigma_pulls * max_reward_at_t - self.sigma_sum
+            mean_reward_of_selected_arm = np.mean(self.r_dist[action])
+            regret_of_step = self.mean_reward_of_best_arm - mean_reward_of_selected_arm
+            self.sigma_regret += regret_of_step
 
             self.running_regret.append(self.sigma_regret)
 
-            #regret_of_step = self.mean_reward_of_best_arm - mean_reward_of_selected_arm
-            #self.sigma_regret += regret_of_step
-
-            #self.running_regret.append(self.sigma_regret)
-
             #intial 10 calculations of each arm's ucb value
-            #ucb_value_of_n_arm = self.average_reward[i] + c*(np.sqrt(((2*np.log(self.sigma_pulls))/self.memory_of_each_pull[i])))
 
             ucb_value_of_n_arm = sum(self.table_of_rewards[:, action]) + c*(np.sqrt(((2*(np.log(10)))/self.memory_of_each_pull[action])))
 
             self.ucb_of_each_arm[action] = ucb_value_of_n_arm
+
+            #debugging
             #print("action: " + str(action))
             #print("reward: " + str(reward))
             #print("calculated ucb value: " + str(ucb_value_of_n_arm))
@@ -147,17 +128,15 @@ class upper_confidence_bound:
 
             #self.optimal_avg_running_reward.append(self.optimal_avg_running_reward)
 
-            observation = next_observation #need explanation; update observation so new stuff
-            time += 1 #what is this used for again?
+            observation = next_observation
+            time += 1
             counter += 1
 
         for episode_idx in range(num_episodes):        
             print("\nEpisode {}/{}".format(episode_idx + 1, num_episodes)) #episode_idx + 1 b/c we start counting from 0
-
-            #not infinite loop because the "game" tells us when we're done
             
             #the following line resets the enviornment so we transition out of the inner loop (stops us from local minimas in other things than MAB)
-            observation = self.env.env.reset() #why 2 env?
+            observation = self.env.env.reset()
             done = False
             print("ucb array: " + str(self.ucb_of_each_arm))
 
@@ -200,30 +179,15 @@ class upper_confidence_bound:
                     #updating running avg reward for each step
                     self.running_avg.append(self.sigma_sum/self.sigma_pulls)
 
-                    #finds mean_reward so we can calculate regret
-                    #mean_reward_of_selected_arm = np.mean(self.table_of_rewards[:, action])
-
-                    #highest_mean_arm_idx = argmax(self.average_reward)
-
-                    #regret_after_T_rounds = self.sigma_pulls*np.max(self.env.env.getRDist()) - sum(self.table_of_rewards[:, action])/self.memory_of_each_pull[action]
-
-                    #self.sigma_regret += regret_after_T_rounds
-                    
-                    #self.running_regret.append(self.sigma_regret)
-
+                    #regret calculations
                     mean_reward_of_selected_arm = np.mean(self.r_dist[action])
                     regret_of_step = self.mean_reward_of_best_arm - mean_reward_of_selected_arm
                     self.sigma_regret += regret_of_step
 
                     self.running_regret.append(self.sigma_regret)
 
-                    # max_reward_at_t = np.max([reward[0] for reward in self.r_dist])
-
-                    # self.sigma_regret = self.sigma_pulls * max_reward_at_t - self.sigma_sum
-
-                    # self.running_regret.append(self.sigma_regret)
                     
-
+                    #debug
                     #print("decayed epsilon: " + str(decayed_epsilon))
                     #print("action distribution: " + str(action_distribution))
                     #print("History of action distrbution: " + str(self.history_of_action_distributions))
@@ -241,13 +205,12 @@ class upper_confidence_bound:
                     #print(self.history_of_pulls)
                     
 
-                    if self.stop(self.running_regret): #HOW DOES IT KNOW ITS DONE?? the multiarmed bandit game tells the program when it's done
-                        print("Espilon diff at convergence: ", np.var(self.running_regret[-250:]))
+                    if done: #HOW DOES IT KNOW ITS DONE?? the multiarmed bandit game tells the program when it's done
                         done = True
                         return np.var(self.running_regret[-250:])
                     else:
-                        observation = next_observation #need explanation; update observation so new stuff
-                        time += 1 #what is this used for again?               
+                        observation = next_observation 
+                        time += 1 
     
                 
 
@@ -257,38 +220,21 @@ class upper_confidence_bound:
         #normalizing bar graph
         for i in range(len(self.memory_of_each_pull)):
             self.memory_of_each_pull[i] = self.memory_of_each_pull[i]/self.sigma_pulls
+       
         #print(self.memory_of_each_pull)
-
-        #sum_of_distribution = np.sum(self.memory_of_each_pull)
-
         #print(sum_of_distribution)
 
         #bar graph
-        #x will be 0,1,2,3,,4,5, num of arms
-        #y will be num of pulls
+        #x will be 0,1,2,3,,4,5, num of arms; y will be num of pulls
         fig1 = plt.figure(figsize = (50,50))
         plt.bar(self.arms_array, self.memory_of_each_pull, color = 'blue', width =.4)
         plt.xlabel("Arm")
         plt.ylabel("Probability")
         plt.title("Probability per arm")
 
-        # updating_bar_array = []
-        # def update():
-        #     plt.bar(self.arms_array, self.memory_of_each_pull, color = 'blue', width =.4)
-        #     plt.xlabel("Arm")
-        #     plt.ylabel("Number of times pulled")
-        #     plt.title("Total pulls by arm")
-        #     updating_bar_array = self.memory_of_each_pull
-
-        # ani = FuncAnimation(fig1, update, frames=range(10), repeat=False)
-
-
         #converging dots plot arm pulledv. steps
-        #x will be steps
-        #y will be num of arms
-        #dots instead of linear, should converge to 1 y value
+        #x will be steps; y will be num of arms
         fig2 = plt.figure(figsize = (50,50))
-        #used plot because it's just a dot so it's not contiousous (cause matplotlibs isn't conitnous right?)
         plt.plot(self.steps, self.history_of_pulls)
         plt.xlabel("Time steps")
         plt.ylabel("Arm pulled")
@@ -301,10 +247,8 @@ class upper_confidence_bound:
         # plt.ylabel("Optimal running avg reward")
         # plt.title("Optimal average running reward")
 
-
         #continous plot timestepv. reward
-        #x will be steps
-        #y will be avg reward
+        #x will be steps; y will be avg reward
         fig4 = plt.figure(figsize = (50,50))
         plt.plot(self.steps, self.running_avg)
         plt.xlabel("Time steps")
@@ -312,8 +256,7 @@ class upper_confidence_bound:
         plt.title("Running average at each time step")
 
         #regret plot, shows us how close our reward is to actual max reward possible of that step
-        #x wlil be steps
-        #y will be regret of each step
+        #x wlil be steps; y will be regret of each step
         fig5 = plt.figure(figsize = (50,50))
         plt.plot(self.steps, self.running_regret)
         plt.xlabel("Time steps")
@@ -323,5 +266,4 @@ class upper_confidence_bound:
 
         plt.show()
 
-        #is the bottom right? yes
         return fig1, fig2, fig4, fig5
