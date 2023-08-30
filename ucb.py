@@ -81,7 +81,10 @@ class upper_confidence_bound:
 
 
 
-    
+    def stop(self, running_regret):
+        #get last 100 terms
+        return np.var(running_regret[-500:]) < 1
+
     def train(self, num_episodes, step_count, c):
         numActions = self.env.env.action_space.n
 
@@ -177,7 +180,7 @@ class upper_confidence_bound:
                     #when a specific arm is pulled, add that number to that index
                     #so now we know how many times an arm has been pulled
                     self.memory_of_each_pull[action] += 1
-
+                    
                     #updating average_reward
                     #self.average_reward[action] = self.accumulated_rewards[action]/self.memory_of_each_pull[action]
                     #self.table_of_rewards[observation][action] = self.table_of_rewards[observation][action]
@@ -238,13 +241,16 @@ class upper_confidence_bound:
                     #print(self.history_of_pulls)
                     
 
-                    if done: #HOW DOES IT KNOW ITS DONE?? the multiarmed bandit game tells the program when it's done
+                    if self.stop(self.running_regret): #HOW DOES IT KNOW ITS DONE?? the multiarmed bandit game tells the program when it's done
+                        print("Espilon diff at convergence: ", np.var(self.running_regret[-250:]))
                         done = True
+                        return np.var(self.running_regret[-250:])
                     else:
                         observation = next_observation #need explanation; update observation so new stuff
                         time += 1 #what is this used for again?               
     
                 
+
 
     def plots(self):
 
