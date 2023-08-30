@@ -32,11 +32,11 @@ eps_greed.train(num_episodes=1, decay_rate=.005, epsilon = 1, step_count = 10000
 eps_greed.plots()
 
 #c is the confidence interval, higher c more explore, low c more exploit
-epsilons = []
-for j in range(30):
-    epsilons.append(upp_con.train(num_episodes=1, step_count= 4000, c=.99))
+#epsilons = []
+#for j in range(30):
+    #epsilons.append(upp_con.train(num_episodes=1, step_count= 4000, c=.99))
 #upp_con.plots()
-print("Averaged epsilon: ", np.average(epsilons) )
+#print("Averaged epsilon: ", np.average(epsilons) )
 
 #epg 1/t decay results in lowered regret compared to ucb under the same step_count and num_episodes
 

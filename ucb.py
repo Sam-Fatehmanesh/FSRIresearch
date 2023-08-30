@@ -207,7 +207,7 @@ class upper_confidence_bound:
 
                     if done: #HOW DOES IT KNOW ITS DONE?? the multiarmed bandit game tells the program when it's done
                         done = True
-                        return np.var(self.running_regret[-250:])
+                        #return np.var(self.running_regret[-250:])
                     else:
                         observation = next_observation 
                         time += 1 
