@@ -227,13 +227,22 @@ class epsilon_greedy:
 
                     # self.running_regret.append(self.sigma_regret)
 
+                    # mean_reward_of_selected_arm = np.mean(self.r_dist[action])
+                    # regret_of_step = self.mean_reward_of_best_arm - mean_reward_of_selected_arm
+                    # self.sigma_regret += regret_of_step
+
+                    # self.running_regret.append(self.sigma_regret)
+
+                    
                     mean_reward_of_selected_arm = np.mean(self.r_dist[action])
                     regret_of_step = self.mean_reward_of_best_arm - mean_reward_of_selected_arm
                     self.sigma_regret += regret_of_step
 
                     self.running_regret.append(self.sigma_regret)
 
-                    #following is wrong
+
+
+                    #following is wrongs
                     #linear regret if only self.sigma_regret
                     #linear regret if self.sigma_regret/step_count
                     #Sublinear regeret if divide by sigma_pulls (amt played)
