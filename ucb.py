@@ -27,6 +27,7 @@ class upper_confidence_bound:
         self.sigma_regret = 0
         self.sigma_sum = 0
         self.sigma_pulls = 0
+        self.sigma_mew_at = 0
 
         #how to calculate regret at a given time step:
         #highest mean reward of the 10 arm reward distributions - mean reward of the selected arm reward distribution
@@ -208,18 +209,20 @@ class upper_confidence_bound:
                     
                     #self.running_regret.append(self.sigma_regret)
 
+                    #mean_reward_of_selected_arm = np.mean(self.r_dist[action])
+                    #regret_of_step = self.mean_reward_of_best_arm - mean_reward_of_selected_arm
+                    #self.sigma_regret += regret_of_step
+
+                    #self.running_regret.append(self.sigma_regret)
+
                     mean_reward_of_selected_arm = np.mean(self.r_dist[action])
                     regret_of_step = self.mean_reward_of_best_arm - mean_reward_of_selected_arm
                     self.sigma_regret += regret_of_step
 
                     self.running_regret.append(self.sigma_regret)
 
-                    # max_reward_at_t = np.max([reward[0] for reward in self.r_dist])
-
-                    # self.sigma_regret = self.sigma_pulls * max_reward_at_t - self.sigma_sum
-
-                    # self.running_regret.append(self.sigma_regret)
                     
+
 
                     #print("decayed epsilon: " + str(decayed_epsilon))
                     #print("action distribution: " + str(action_distribution))
