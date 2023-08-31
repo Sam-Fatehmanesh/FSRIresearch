@@ -1,6 +1,7 @@
 from maximum_entropy import MaxEntropyQLearning
 from thompson_samp import ThompsonSampling
 import plotting
+import numpy as np
 from env import maBanditWorld
 from matplotlib import pyplot as plt
 from epsilon_greedy import epsilon_greedy
@@ -32,9 +33,15 @@ thomps.plots()
 #eps_greed.plots()
 
 #c is the confidence interval, higher c more explore, low c more exploit
-#upp_con.train(num_episodes=1, step_count= 10000, c=.99)
-#upp_con.plots()
+#epsilons = []
+#for j in range(30):
+    #epsilons.append(#upp_con.train(num_episodes=1, step_count= 4000, c=.99))
+##upp_con.plots()
+#print("Averaged epsilon: ", np.average(epsilons) )
 
 #epg 1/t decay results in lowered regret compared to ucb under the same step_count and num_episodes
+
+
+#1891 steps
 
 
