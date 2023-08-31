@@ -28,13 +28,13 @@ colors = ['b', 'g', 'r', 'c', 'm', 'y', 'k', 'orange', 'purple', 'brown']
 
 #plotting.plot_episode_stats(thomp_stats, "Thompson Smapling Rewards ")
 #0.9 DISCOUNT FACTOR
-def run_many_test():
+def run_many_test(test_func):
     regret_curves = []
     for i in tqdm(range(512)):
         np.random.seed(i)
         # max_ent = MaxEntropyQLearning(env, seed=i+69)
 
-        regret_curves.append(run_test(i+69))
+        regret_curves.append(test_func(i+69))
 
         
 
@@ -45,7 +45,7 @@ def run_many_test():
 
 
 
-def run_test(seed):
+def ex_test(seed):
     # write code to run a single algo test
     # ex
     # thomps = OptimisticThompsonSampling(env, seed=seed)
