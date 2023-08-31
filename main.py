@@ -34,9 +34,7 @@ for i in tqdm(range(512)):
     np.random.seed(i)
     # max_ent = MaxEntropyQLearning(env, seed=i+69)
 
-    # regret_curves.append(max_ent.train(num_episodes=1, learning_rate=0.16, discount_factor=0.9, epsilon=0.01, step_count=400, decay_factor=0.98))
-    thomps = OptimisticThompsonSampling(env, seed=i+69)
-    regret_curves.append(thomps.train(num_episodes=1, step_count=400, lambdaconst=0.1, graph_color=colors[i%10]))
+    regret_curves.append(run_test(i+69))
 
     
 
@@ -44,6 +42,15 @@ for i in tqdm(range(512)):
 for i in range(len(regret_curves)):
     plt.plot([i for i in range(len(regret_curves[i]))], regret_curves[i], label = str(i))
 plt.show()
+
+
+
+def run_test(seed):
+    # write code to run a single algo test
+    # ex
+    # thomps = OptimisticThompsonSampling(env, seed=seed)
+    # return thomps.train(num_episodes=1, step_count=400, lambdaconst=0.1, graph_color=colors[i%10]))
+    pass
 
 #c is the confidence interval, higher c more explore, low c more exploit
 #epsilons = []
