@@ -6,11 +6,25 @@ import plotting
 import env as maBandaWorld
 from scipy.stats import entropy
 import math
+from matplotlib import pyplot as plt
 #expsil
 class MaxEntropyQLearning:
     def __init__(self, env, seed=42 ):
         np.random.seed(seed)
         self.env = env
+        self.r_dist = self.env.env.getRDist()
+
+        self.steps = []
+        self.running_regret = []
+        self.sigma_regret= 0 
+
+        self.array_with_mean_reward_of_each_arm = []
+        for i in range(len(self.r_dist)):
+            mean_reward_of_each_arm = np.mean(self.r_dist[i])
+            self.array_with_mean_reward_of_each_arm.append(mean_reward_of_each_arm)
+        
+        self.best_arm = np.argmax(self.array_with_mean_reward_of_each_arm)
+        self.mean_reward_of_best_arm = np.max(self.array_with_mean_reward_of_each_arm)
 
 #working version
 
@@ -32,6 +46,7 @@ class MaxEntropyQLearning:
 
             best_action_idx = np.argmax(q[observation] + 1e-10 * np.random.random(q[observation].shape))
             distribution = []
+            print(q, "q")
             for action_idx in range(n_actions):
                 probability = epsilon
                 if action_idx == best_action_idx:
@@ -65,9 +80,13 @@ class MaxEntropyQLearning:
         step_reward_avg=np.zeros(num_episodes*step_count))
 
         numActions = self.env.env.action_space.n
-        q_size = 50
-        q = np.zeros((q_size, q_size, numActions))
+        q_size = 10
+        q =  np.random.rand(q_size, q_size)
         rewards = np.zeros(num_episodes*step_count)
+        numBandits = self.env.env.action_space.n
+        data = np.zeros((numBandits, 2))
+        rewards = np.zeros(num_episodes*step_count)
+        armPulled = np.zeros(numBandits)
         '''
         Initializing the Q-Table with the proper dimensions of the environment, assuming 50 is large enough to discretize it accurately
         '''
@@ -119,6 +138,12 @@ class MaxEntropyQLearning:
                     the update of the Q-Value and the added noise with the epsilon greedy policy. Maixmizing entropy, or approaching an d action distribution 
                     that is more (disorded?) is theoretically optimal. 
                     '''
+                    self.steps.append(len(self.steps))
+                    mean_reward_of_selected_arm = np.mean(self.r_dist[action])
+                    regret_of_step = self.mean_reward_of_best_arm - mean_reward_of_selected_arm
+                    self.sigma_regret += regret_of_step
+
+                    self.running_regret.append(self.sigma_regret)
 
                     if done:
                         done = True
@@ -127,3 +152,17 @@ class MaxEntropyQLearning:
                         time += 1
         
         return statistics
+    def plots(self):
+
+            #regret plot, shows us how close our reward is to actual max reward possible of that step
+            #x wlil be steps; y will be regret of each step
+            fig5 = plt.figure(figsize = (50,50))
+            plt.plot(self.steps, self.running_regret)
+            plt.xlabel("Time steps")
+            plt.ylabel("Regret")
+            plt.title("Time steps vs. Regret")
+
+
+            plt.show()
+
+            return fig5
