@@ -8,7 +8,7 @@ from ucb import upper_confidence_bound
 
 env = maBanditWorld()
 # max_ent = MaxEntropyQLearning(env)
-#thomps = ThompsonSampling(env)
+thomps = ThompsonSampling(env)
 eps_greed = epsilon_greedy(10, env, 42)
 upp_con = upper_confidence_bound(10, env, 42)
 
@@ -21,18 +21,19 @@ colors = ['b', 'g', 'r', 'c', 'm', 'y', 'k', 'orange', 'purple', 'brown']
 #EPSILON PREFERRED: 0.095
 # Learning rate tuning
 #0.16 LEARNING RATE
-#thomp_stats = thomps.train(num_episodes=10000, step_count=1000)
+thomp_stats = thomps.train(num_episodes=1, step_count=10000)
+thomps.plots()
 
-#plotting.plot_episode_stats(thomp_stats, "Thompson Smapling Rewards ")
+# plotting.plot_episode_stats(thomp_stats, "Thompson Smapling Rewards ")
 #0.9 DISCOUNT FACTOR
 
 
-eps_greed.train(num_episodes=1, decay_rate=.005, epsilon = 1, step_count = 10000)
-eps_greed.plots()
+#eps_greed.train(num_episodes=1, decay_rate=.005, epsilon = 1, step_count = 10000)
+#eps_greed.plots()
 
 #c is the confidence interval, higher c more explore, low c more exploit
-upp_con.train(num_episodes=1, step_count= 10000, c=.99)
-upp_con.plots()
+#upp_con.train(num_episodes=1, step_count= 10000, c=.99)
+#upp_con.plots()
 
 #epg 1/t decay results in lowered regret compared to ucb under the same step_count and num_episodes
 

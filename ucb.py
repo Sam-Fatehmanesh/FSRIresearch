@@ -30,7 +30,6 @@ class upper_confidence_bound:
     
         #find the true best arm
         self.r_dist = self.env.env.getRDist()
-        self.p_dist = self.env.env.getPDist()
         
         self.array_with_mean_reward_of_each_arm = []
         for i in range(len(self.r_dist)):
