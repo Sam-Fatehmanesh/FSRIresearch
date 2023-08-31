@@ -28,27 +28,39 @@ colors = ['b', 'g', 'r', 'c', 'm', 'y', 'k', 'orange', 'purple', 'brown']
 
 #plotting.plot_episode_stats(thomp_stats, "Thompson Smapling Rewards ")
 #0.9 DISCOUNT FACTOR
-def run_many_test(test_func):
+def run_many_test(test_func, bound_func):
     regret_curves = []
     for i in tqdm(range(512)):
         np.random.seed(i)
 
         regret_curves.append(test_func(i+69))
     for i in range(len(regret_curves)):
-        plt.plot([i for i in range(len(regret_curves[i]))], regret_curves[i], label = str(i))
+        plt.plot([i for i in range(len(regret_curves[i]))], regret_curves[i], label = str(i), color="red")
+
+    plt.plot([i for i in range(len(bound_func()))], bound_func(), label = "Bound", color="blue")
 
     plt.xlabel("Steps")
     plt.ylabel("Total Regret")
     plt.show()
 
+    
+
+def OptimisticThompsonSampling_test(seed):
+    thomps = OptimisticThompsonSampling(env, seed=seed)
+    return thomps.train(num_episodes=1, step_count=400, lambdaconst=0.1, graph_color="red")
+
+def OTbound():
+    return [np.sqrt(10*i*np.log(i)) for i in range(400)]
+
+def ThompsonSampling_test(seed):
+    thomps = ThompsonSampling(env, seed=seed)
+    return thomps.train(num_episodes=1, step_count=400)
+
+def TSbound():
+    return [np.sqrt(10*i*np.log(i)) for i in range(400)]
 
 
-def ex_test(seed):
-    # write code to run a single algo test
-    # ex
-    # thomps = OptimisticThompsonSampling(env, seed=seed)
-    # return thomps.train(num_episodes=1, step_count=400, lambdaconst=0.1, graph_color=colors[i%10]))
-    pass
+run_many_test(ThompsonSampling_test, TSbound)
 
 #c is the confidence interval, higher c more explore, low c more exploit
 #epsilons = []
