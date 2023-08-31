@@ -32,15 +32,13 @@ def run_many_test(test_func):
     regret_curves = []
     for i in tqdm(range(512)):
         np.random.seed(i)
-        # max_ent = MaxEntropyQLearning(env, seed=i+69)
 
         regret_curves.append(test_func(i+69))
-
-        
-
-
     for i in range(len(regret_curves)):
         plt.plot([i for i in range(len(regret_curves[i]))], regret_curves[i], label = str(i))
+
+    plt.xlabel("Steps")
+    plt.ylabel("Total Regret")
     plt.show()
 
 
