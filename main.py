@@ -28,20 +28,20 @@ colors = ['b', 'g', 'r', 'c', 'm', 'y', 'k', 'orange', 'purple', 'brown']
 
 #plotting.plot_episode_stats(thomp_stats, "Thompson Smapling Rewards ")
 #0.9 DISCOUNT FACTOR
+def run_many_test():
+    regret_curves = []
+    for i in tqdm(range(512)):
+        np.random.seed(i)
+        # max_ent = MaxEntropyQLearning(env, seed=i+69)
 
-regret_curves = []
-for i in tqdm(range(512)):
-    np.random.seed(i)
-    # max_ent = MaxEntropyQLearning(env, seed=i+69)
+        regret_curves.append(run_test(i+69))
 
-    regret_curves.append(run_test(i+69))
-
-    
+        
 
 
-for i in range(len(regret_curves)):
-    plt.plot([i for i in range(len(regret_curves[i]))], regret_curves[i], label = str(i))
-plt.show()
+    for i in range(len(regret_curves)):
+        plt.plot([i for i in range(len(regret_curves[i]))], regret_curves[i], label = str(i))
+    plt.show()
 
 
 
