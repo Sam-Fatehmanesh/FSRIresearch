@@ -6,12 +6,15 @@ from env import maBanditWorld
 from matplotlib import pyplot as plt
 from epsilon_greedy import epsilon_greedy
 from ucb import upper_confidence_bound
+from OTS import OptimisticThompsonSampling
 
 env = maBanditWorld()
 max_ent = MaxEntropyQLearning(env)
 thomps = ThompsonSampling(env)
 eps_greed = epsilon_greedy(10, env, 42)
 upp_con = upper_confidence_bound(10, env, 42)
+
+ots = OptimisticThompsonSampling(env)
 
 colors = ['b', 'g', 'r', 'c', 'm', 'y', 'k', 'orange', 'purple', 'brown']
 
@@ -23,8 +26,8 @@ colors = ['b', 'g', 'r', 'c', 'm', 'y', 'k', 'orange', 'purple', 'brown']
 # Learning rate tuning
 #0.16 LEARNING RATE
 #thomp_stats = thomps.train(num_episodes=1, step_count=10000)
-#thomps.plots()
-ent_stats = max_ent.train(num_episodes=1000, learning_rate=0.1, discount_factor=0.9, epsilon=0.01, step_count=1, decay_factor=0.98)
+#sthomps.plots()
+ent_stats = max_ent.train(num_episodes=2000, learning_rate=0.1, discount_factor=0.9, epsilon=0.01, step_count=1, decay_factor=0.98)
 max_ent.plots()
 # plotting.plot_episode_stats(thomp_stats, "Thompson Smapling Rewards ")
 #0.9 DISCOUNT FACTOR
@@ -37,8 +40,10 @@ max_ent.plots()
 #epsilons = []
 #for j in range(30):
     #epsilons.append(#upp_con.train(num_episodes=1, step_count= 4000, c=.99))
-##upp_con.plots()
+#upp_con.train(num_episodes=1, step_count= 2000, c=.99)
+#upp_con.plots()
 #print("Averaged epsilon: ", np.average(epsilons) )
+#ots_sts = ots.train(1, 1000)
 
 #epg 1/t decay results in lowered regret compared to ucb under the same step_count and num_episodes
 

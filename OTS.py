@@ -14,6 +14,19 @@ class OptimisticThompsonSampling:
     def __init__(self, env, seed=42):
         np.random.seed(seed)
         self.env = env
+        self.r_dist = self.env.env.getRDist()
+
+        self.steps = []
+        self.running_regret = []
+        self.sigma_regret= 0 
+
+        self.array_with_mean_reward_of_each_arm = []
+        for i in range(len(self.r_dist)):
+            mean_reward_of_each_arm = np.mean(self.r_dist[i])
+            self.array_with_mean_reward_of_each_arm.append(mean_reward_of_each_arm)
+        
+        self.best_arm = np.argmax(self.array_with_mean_reward_of_each_arm)
+        self.mean_reward_of_best_arm = np.max(self.array_with_mean_reward_of_each_arm)
 
     def thompson_policy(self, reward_arr):
 
@@ -75,31 +88,31 @@ class OptimisticThompsonSampling:
                     statistics.episode_rewards[episode_idx] += reward
                     statistics.episode_lengths[episode_idx] = time
                     statistics.step_reward_avg[episode_idx*step_count + i] = np.sum(rewards)/(episode_idx*step_count + i + 1)
-
+                
+                    self.steps.append(len(self.steps))
+                    mean_reward_of_selected_arm = np.mean(self.r_dist[action])
+                    regret_of_step = self.mean_reward_of_best_arm - mean_reward_of_selected_arm
+                    self.sigma_regret += regret_of_step
+                    self.running_regret.append(self.sigma_regret)
+                    
                     if done:
                         done = True
                     else:
                         observation = next_observation
                         time += 1
 
-        regret = np.zeros(num_episodes*step_count)
-        maxR = np.max(self.env.env.getRDist())
-        for i in tqdm(range(num_episodes*step_count)):
-            regret[i] = ((i+1)*maxR) - np.sum(rewards[:i+1])
+        
 
 
 
-        print("max R: " + str(maxR))
-        plot_episode_stats(statistics, "Thompson Sampling", " ", "b")
+        #print("max R: " + str(maxR))
+        #plot_episode_stats(statistics, "Thompson Sampling", " ", "b")
         X = [i for i in range(num_episodes*step_count)]
-        plotPointGraph(X, regret, "Step", "Cumulative Regret", "Thompson Sampling Cumulative Regret", figsize=(50, 50))
+        plotPointGraph(X, self.running_regret, figsize=(50, 50))
         plt.show()
         return statistics
 
-def plotPointGraph(X, Y, xlabel, ylabel, title, figsize=(50,50)):
+def plotPointGraph(X, Y, figsize=(50,50)):
     fig = plt.figure(figsize=figsize)
     plt.plot(X, Y)#, color = 'blue', width =.4)
-    plt.xlabel(xlabel)
-    plt.ylabel(ylabel)
-    plt.title(title)
     return fig

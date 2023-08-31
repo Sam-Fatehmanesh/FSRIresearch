@@ -27,26 +27,26 @@ class MaxEntropyQLearning:
         self.mean_reward_of_best_arm = np.max(self.array_with_mean_reward_of_each_arm)
 
 #working version
-
+    def epsilon_decay(self, step_count, decay_rate, epsilon):
+            return epsilon * ((1 - decay_rate)**(step_count))
     def eps_policy(self, q, n_actions, epsilon):
         def policy(observation):
             # Epsilon-greedy policy with added exploration noise to break ties
-            '''
+            
             distribution = []
             if epsilon > np.random.rand():
                 distribution = [1.0/n_actions for i in range(n_actions)]
                 return distribution
             else:
-                best_action_idx = np.argmax(q[observation] -(np.sum(q[observation] * np.log(q[observation]))) + 1e-10 * np.random.random(q[observation].shape))
+                best_action_idx = np.argmax(q[observation] + 1e-10 * np.random.random(q[observation].shape))
                 distribution = [0.0 for i in range(n_actions)]
                 if 0 <= best_action_idx < n_actions:
                     distribution[best_action_idx] += 1.0
                 return distribution
+            
             '''
-
-            best_action_idx = np.argmax(q[observation] + 1e-10 * np.random.random(q[observation].shape))
-            distribution = []
-            print(q, "q")
+            distribution = q[observation]
+            #print(q, "q")
             for action_idx in range(n_actions):
                 probability = epsilon
                 if action_idx == best_action_idx:
@@ -59,6 +59,7 @@ class MaxEntropyQLearning:
             #     if action_idx == best_action_idx:
             #         probability += 1 - epsilon
             #     distribution.append(probability)
+            '''
             # return distribution
         return policy
 
@@ -102,7 +103,8 @@ class MaxEntropyQLearning:
             while not done:
                 # Choose an action using the max-entropy policy
                 for i in range(step_count):
-                    epsilon *= decay_factor
+                    decayed_epsilon = self.epsilon_decay(step_count=i+1, decay_rate=decay_factor, epsilon=epsilon) #decays within episodes not out of
+
                     policy = self.eps_policy(q, numActions, epsilon)
                     action_distribution = policy(observation)
                     total_probability = sum(action_distribution)
@@ -123,7 +125,7 @@ class MaxEntropyQLearning:
                     entropy_term = entropy(action_distribution,base=math.e)
                     
                     # Update Q-value using the Q-learning update rule with entropy regularization
-                    q[observation][action] += learning_rate * (reward + discount_factor * (best_next_q - q[observation][action] + entropy_term))
+                    q[observation][action] += learning_rate * (reward + discount_factor * (best_next_q - q[observation][action] + 0.001*entropy_term))
 
 
                     '''
