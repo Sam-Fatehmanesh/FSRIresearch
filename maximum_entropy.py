@@ -32,20 +32,21 @@ class MaxEntropyQLearning:
     def eps_policy(self, q, n_actions, epsilon):
         def policy(observation):
             # Epsilon-greedy policy with added exploration noise to break ties
-            
+            '''
             distribution = []
             if epsilon > np.random.rand():
                 distribution = [1.0/n_actions for i in range(n_actions)]
                 return distribution
             else:
-                best_action_idx = np.argmax(q[observation] + 1e-10 * np.random.random(q[observation].shape))
+                best_action_idx = np.argmax(q[observation] -(np.sum(q[observation] * np.log(q[observation]))) + 1e-10 * np.random.random(q[observation].shape))
                 distribution = [0.0 for i in range(n_actions)]
                 if 0 <= best_action_idx < n_actions:
                     distribution[best_action_idx] += 1.0
                 return distribution
-            
             '''
-            distribution = q[observation]
+
+            best_action_idx = np.argmax(q[observation] + 1e-10 * np.random.random(q[observation].shape))
+            distribution = []
             #print(q, "q")
             for action_idx in range(n_actions):
                 probability = epsilon
@@ -59,7 +60,6 @@ class MaxEntropyQLearning:
             #     if action_idx == best_action_idx:
             #         probability += 1 - epsilon
             #     distribution.append(probability)
-            '''
             # return distribution
         return policy
 
