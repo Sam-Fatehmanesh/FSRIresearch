@@ -34,8 +34,8 @@ class ThompsonSampling:
         samples_list = [np.random.beta(1 + reward_arr[i][0], 1 + reward_arr[i][1]) for i in range(len(reward_arr))]
         #print(reward_arr, "reward array")
         #print(samples_list)
-        print(np.argmax(samples_list), "selected action")
-        print(self.best_arm, "best arm")
+        #print(np.argmax(samples_list), "selected action")
+        #print(self.best_arm, "best arm")
         return np.argmax(samples_list)
 
     def train(self, num_episodes, step_count):
@@ -103,7 +103,7 @@ class ThompsonSampling:
         # X = [i for i in range(num_episodes*step_count)]
         # plotPointGraph(X, regret, "Step", "Cumulative Regret", "Thompson Sampling Cumulative Regret", figsize=(50, 50))
         # plt.show()
-        return statistics
+        return self.running_regret
 
 
     def plots(self):

@@ -12,7 +12,7 @@ from scipy.linalg import fractional_matrix_power
 
 
 #expsil Maxmimzing the number of states visited or the next state transition, action/state joint distribution
-class OptimisticThompsonSampling:
+class OptimisticThompsonSamplingFO:
     def __init__(self, env, seed=42):
         np.random.seed(seed)
         self.env = env

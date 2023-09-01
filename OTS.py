@@ -101,6 +101,8 @@ class OptimisticThompsonSampling:
                         observation = next_observation
                         time += 1
 
+        return self.running_regret
+
         
 
 

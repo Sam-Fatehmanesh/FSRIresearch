@@ -170,6 +170,8 @@ class epsilon_greedy:
                         observation = next_observation
                         time += 1
 
+        return self.running_regret
+
 
     def plots(self):
         #normalizing bar graph

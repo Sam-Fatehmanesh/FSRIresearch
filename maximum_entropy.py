@@ -13,10 +13,11 @@ class MaxEntropyQLearning:
         np.random.seed(seed)
         self.env = env
         self.r_dist = self.env.env.getRDist()
-
+        n_actions = 10
         self.steps = []
         self.running_regret = []
         self.sigma_regret= 0 
+        self.memory_of_each_pull = [0.0 for i in range(n_actions)]
 
         self.array_with_mean_reward_of_each_arm = []
         for i in range(len(self.r_dist)):
@@ -46,6 +47,8 @@ class MaxEntropyQLearning:
             '''
 
             best_action_idx = np.argmax(q[observation] + 1e-10 * np.random.random(q[observation].shape))
+            
+            
             distribution = []
             #print(q, "q")
             for action_idx in range(n_actions):
@@ -93,8 +96,8 @@ class MaxEntropyQLearning:
         '''
 
         for episode_idx in range(num_episodes):
-            if (episode_idx + 1) % 10 == 0:
-                print("\nEpisode {}/{}".format(episode_idx + 1, num_episodes))
+            #if (episode_idx + 1) % 10 == 0:
+                #print("\nEpisode {}/{}".format(episode_idx + 1, num_episodes))
             
             observation = self.env.env.reset()
             done = False
@@ -153,7 +156,7 @@ class MaxEntropyQLearning:
                         observation = next_observation
                         time += 1
         
-        return statistics
+        return self.running_regret
     def plots(self):
 
             #regret plot, shows us how close our reward is to actual max reward possible of that step

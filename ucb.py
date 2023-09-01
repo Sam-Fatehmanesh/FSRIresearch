@@ -68,7 +68,7 @@ class upper_confidence_bound:
 
     def stop(self, running_regret):
         #get last 100 terms
-        return np.var(running_regret[-500:]) < 1
+        return np.var(running_regret[-500:]) < 0.05
 
     def train(self, num_episodes, step_count, c):
         numActions = self.env.env.action_space.n
@@ -205,12 +205,13 @@ class upper_confidence_bound:
                     #print(self.history_of_pulls)
                     
 
-                    if done: #HOW DOES IT KNOW ITS DONE?? the multiarmed bandit game tells the program when it's done
+                    if self.stop(self.running_regret): #HOW DOES IT KNOW ITS DONE?? the multiarmed bandit game tells the program when it's done
                         done = True
-                        #return np.var(self.running_regret[-250:])
+                        return np.var(self.running_regret[-500:])
                     else:
                         observation = next_observation 
                         time += 1 
+        return self.running_regret
     
                 
 
